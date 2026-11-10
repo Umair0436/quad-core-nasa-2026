@@ -1,0 +1,13 @@
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+backend/.bundle/
+backend/log/*
+!backend/log/.keep
+backend/tmp/*
+!backend/tmp/.keep
+backend/config/master.key
+.env
+.env.*
+!.env.example
+.DS_Store

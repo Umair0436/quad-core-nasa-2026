@@ -1,0 +1,59 @@
+[
+  {
+    "module": "habitat",
+    "title": "A breath of fresh air",
+    "description": "Your crew needs oxygen. The recycler can help, but it uses electricity. How will you power today's life support?",
+    "choices": [
+      {
+        "id": "recycle", "label": "Run the oxygen recycler",
+        "description": "Make more oxygen using stored power.",
+        "effects": { "oxygen": 25, "power": -20 },
+        "explanation": "Life-support equipment needs electricity to produce and recycle breathable air. You gained oxygen, but spent power that other equipment also needs."
+      },
+      {
+        "id": "conserve", "label": "Use the oxygen reserve",
+        "description": "Save electricity and breathe from your backup supply.",
+        "effects": { "oxygen": -12, "power": 8 },
+        "explanation": "Using stored oxygen lets you save electricity today. The trade-off is a smaller oxygen reserve for tomorrow."
+      }
+    ]
+  },
+  {
+    "module": "shelter",
+    "title": "A warning from the Sun",
+    "description": "A simulated solar-particle alert interrupts the mission. Bring the crew inside, or spend more time collecting energy?",
+    "choices": [
+      {
+        "id": "shelter", "label": "Move into the storm shelter",
+        "description": "Use power for shelter life support and keep exposure low.",
+        "effects": { "power": -20, "radiation": 5 },
+        "explanation": "Shielding can reduce exposure to energetic particles. Sheltering the crew still needs power for life support. This scenario is simulated, not a live space-weather alert."
+      },
+      {
+        "id": "collect", "label": "Collect power outside",
+        "description": "Gain energy, but expose the crew to more radiation.",
+        "effects": { "oxygen": -5, "power": 10, "radiation": 45 },
+        "explanation": "Outside work can support mission tasks, but during a solar-particle event it can increase exposure. The crew also uses oxygen while working. These are game points, not radiation-dose measurements."
+      }
+    ]
+  },
+  {
+    "module": "greenhouse",
+    "title": "Plan the final day's supplies",
+    "description": "The greenhouse has a crop ready to harvest. Use power to run its equipment, or spend the day boosting the energy supply?",
+    "choices": [
+      {
+        "id": "harvest", "label": "Power the greenhouse",
+        "description": "Harvest an already-grown crop and support the air system.",
+        "effects": { "oxygen": 5, "power": -12, "food": 30 },
+        "explanation": "Plants can provide food and contribute oxygen, but a controlled growing environment needs energy. Your crop was grown before this mission; it did not grow in one day."
+      },
+      {
+        "id": "solar", "label": "Work on the solar array",
+        "description": "Collect more power, using crew supplies and time outside.",
+        "effects": { "oxygen": -5, "power": 15, "food": -8, "radiation": 30 },
+        "explanation": "Maintaining solar equipment can improve the power supply. Outside work uses crew supplies and adds exposure, so the right choice depends on your remaining resources."
+      }
+    ]
+  }
+]
