@@ -1,0 +1,39 @@
+.explorer-stage { position: relative; height: clamp(470px, 47vw, 650px); min-height: 470px; background: #050b1d; isolation: isolate; overflow: hidden; outline: none; }
+.explorer-stage:focus-visible { box-shadow: inset 0 0 0 2px #cdb2f5; }
+.explorer-stage > div:first-child:not(.explorer-static-map):not(.explorer-preparing) { height: 100%; }
+.explorer-stage canvas { display: block; touch-action: pan-y; }
+.explorer-building-labels { position: absolute; inset: 0; pointer-events: none; }
+.explorer-building-labels > button { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: auto; background: #10152de6; border: 1px solid #c5b2e16e; color: #f0e6ff; border-radius: 8px; padding: 9px 13px; min-height: 39px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px #0005; white-space: nowrap; }
+.explorer-building-labels > button:hover:not(:disabled) { border-color: #dec6ff; background: #302044ef; }
+.explorer-building-labels > button:disabled { pointer-events: none; opacity: .75; }
+.explorer-building-labels .active-destination { border-color: #a3ead3; box-shadow: 0 0 0 3px #a3ead316, 0 0 18px #a3ead32a; }
+.explorer-building-labels small { display: block; color: #ace8d2; letter-spacing: 1px; font-size: 6px; margin-top: 4px; }
+.explorer-view-label { position: absolute; top: 17px; left: 18px; background: #11162ad9; border: 1px solid #c5b2e130; border-radius: 20px; padding: 8px 11px; color: #e3d8f2; font-size: 7px; font-weight: 900; letter-spacing: 1.2px; pointer-events: none; display: flex; align-items: center; gap: 6px; }
+.explorer-focus-hint { position: absolute; top: 18px; right: 18px; max-width: 260px; padding: 10px 13px; border: 1px solid #d2b7f766; background: #10152ce8; color: #eee0ff; border-radius: 9px; font-size: 10px; font-weight: 700; line-height: 1.6; text-align: left; }
+.explorer-focus-hint > span { padding-left: 8px; color: #cdb0fc; }
+.explorer-guide, .explorer-paused { position: absolute; top: 58px; left: 18px; max-width: calc(100% - 36px); border: 1px solid #c5b2e13d; border-radius: 8px; padding: 10px 13px; background: #11162be6; color: #eadcf9; font-size: 11px; line-height: 1.6; pointer-events: none; }
+.explorer-guide > small { display: block; color: #c1b4cf; font-size: 9px; }
+.explorer-paused { color: #ddc5a2; border-color: #f0c58355; }
+.explorer-interact { position: absolute; left: 50%; bottom: 63px; transform: translateX(-50%); display: flex; align-items: center; gap: 11px; max-width: calc(100% - 34px); white-space: nowrap; padding: 13px 17px; background: #ffe2a1; color: #30223a; border: 1px solid #fff0c6; border-radius: 10px; box-shadow: 0 4px 0 #9e773f, 0 4px 20px #08071688; font-size: 12px; font-weight: 900; }
+.explorer-interact kbd { display: grid; place-items: center; width: 25px; height: 25px; background: #382b4514; border: 1px solid #382b4555; border-radius: 5px; font: 900 12px 'Nunito Sans', sans-serif; }
+.explorer-controls { position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 13px; min-height: 43px; padding: 11px 16px; background: #0b1029ef; border-top: 1px solid #c3a5df33; color: #cdbddd; font-size: 8px; line-height: 1.8; pointer-events: none; }
+.explorer-controls kbd { font: 700 7px 'Nunito Sans', sans-serif; color: #f2e6ff; border: 1px solid #c3a5df44; border-radius: 3px; padding: 3px 5px; background: #b3a3da09; }
+.explorer-controls > span:last-child { margin-left: auto; color: #b9a8ce; }
+.explorer-dpad { position: absolute; left: 16px; bottom: 61px; display: grid; grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(2, 32px); gap: 4px; }
+.explorer-dpad > button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #bda2dd77; border-radius: 7px; background: #11162cbd; color: #eee2fb; font: 500 19px/1 system-ui, sans-serif; touch-action: none; user-select: none; }
+.explorer-dpad > button:active { background: #5b4975; }
+.explorer-dpad > button:disabled { cursor: default; opacity: .35; }
+.dpad-forward { grid-column: 2; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-back { grid-column: 2; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.explorer-static-map { height: 100%; position: relative; }
+.explorer-static-map > img { width: 100%; height: 100%; object-fit: cover; }
+.explorer-static-map > p { position: absolute; left: 15px; right: 15px; bottom: 50px; margin: 0; padding: 13px; border: 1px solid #bda2dd66; border-radius: 8px; background: #11162ceb; color: #e9ddfa; font-size: 12px; line-height: 1.7; }
+.explorer-preparing { height: 100%; min-height: 470px; display: grid; place-items: center; color: #d8c2ef; font-size: 14px; }
+.back-to-exploring { margin: 0 22px 20px; border: 1px solid #c6abdf55; border-radius: 7px; padding: 10px 13px; background: #b6a6d609; color: #d8c3ed; font-size: 11px; font-weight: 700; }
+.back-to-exploring:hover { background: #302b44; }
+.outpost-play-grid.exploration-layout { grid-template-columns: minmax(0, 1.85fr) minmax(310px, 1fr); }
+@media (max-width: 1100px) { .outpost-play-grid.exploration-layout { grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); } .explorer-focus-hint { top: 55px; left: 18px; right: auto; max-width: 220px; } }
+@media (max-width: 950px) { .outpost-play-grid.exploration-layout { grid-template-columns: 1fr; } .explorer-stage { height: 560px; } .explorer-focus-hint { top: 18px; right: 18px; left: auto; max-width: 260px; } }
+@media (max-width: 650px) { .explorer-stage { height: 510px; min-height: 510px; } .explorer-view-label { top: 13px; left: 12px; font-size: 6px; letter-spacing: .7px; } .explorer-focus-hint { top: 51px; left: 12px; right: auto; max-width: 220px; font-size: 10px; } .explorer-building-labels > button { padding: 8px 10px; font-size: 9px; min-height: 36px; } .explorer-guide, .explorer-paused { top: 51px; left: 12px; max-width: calc(100% - 24px); font-size: 10px; } .explorer-dpad { left: 12px; bottom: 66px; grid-template-columns: repeat(3, 38px); grid-template-rows: repeat(2, 38px); } .explorer-dpad > button { width: 38px; height: 38px; } .explorer-interact { left: auto; right: 12px; bottom: 67px; transform: none; padding: 11px; gap: 7px; font-size: 10px; max-width: calc(100% - 155px); white-space: normal; } .explorer-interact kbd { display: none; } .explorer-controls { padding: 9px 12px; min-height: 48px; gap: 7px 12px; font-size: 7px; } .explorer-controls > span:last-child { margin-left: 0; width: 100%; } }

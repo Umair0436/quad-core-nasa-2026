@@ -20,7 +20,13 @@ export type Decision = {
   description: string;
   choices: Choice[];
 };
+export type MissionRules = {
+  daily_costs: Partial<Record<Resource, number>>;
+  radiation_limit: number;
+  mission_days: number;
+};
 export type Mission = {
+  rules: MissionRules;
   state: GameState;
   token: string;
   decision: Decision | null;
@@ -38,7 +44,7 @@ async function request<T>(path: string, body: object): Promise<T> {
       signal: AbortSignal.timeout(15000),
     });
   } catch {
-    throw new Error('Mission control is not responding. Check that the Rails API is running on port 3100, then try again.');
+    throw new Error('We could not reach mission control. Please try again in a moment.');
   }
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.error ?? 'Mission control could not process that request. Please try again.');

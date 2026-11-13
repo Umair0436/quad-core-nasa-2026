@@ -30,6 +30,7 @@ module Api
     def render_mission(result)
       render json: result.merge(
         decision: MissionEngine.decision_for(result[:state]),
+        rules: { daily_costs: MissionEngine::DAILY_COST, radiation_limit: MissionEngine::RADIATION_LIMIT, mission_days: MissionEngine.decisions.length },
         token: verifier.generate(result[:state], purpose: "mission", expires_in: 2.hours)
       )
     end

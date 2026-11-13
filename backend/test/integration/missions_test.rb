@@ -6,6 +6,9 @@ class MissionsTest < ActionDispatch::IntegrationTest
     assert_response :success
     mission = response.parsed_body
     assert_equal "habitat", mission["decision"]["module"]
+    assert_equal({ "oxygen" => -14, "power" => -10, "food" => -12 }, mission["rules"]["daily_costs"])
+    assert_equal 80, mission["rules"]["radiation_limit"]
+    assert_equal 3, mission["rules"]["mission_days"]
     assert_not mission["decision"]["choices"][0].key?("explanation")
     post "/api/missions/decision", params: { token: mission["token"], action_id: "recycle" }, as: :json
     assert_response :success

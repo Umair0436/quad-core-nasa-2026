@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800;900&display=swap');
 
-.launch-page { --launch-ink: #f6f3ff; position: relative; min-height: 100svh; isolation: isolate; overflow: hidden; background: #080b1c; color: var(--launch-ink); font-family: 'Nunito Sans', system-ui, sans-serif; }
+.launch-page { --launch-ink: #f6f3ff; --launch-panel: #12152bf2; --launch-border: #b3a4d959; --launch-accent: #d6beff; --launch-header-height: 72px; position: relative; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); isolation: isolate; overflow: clip; background: #080b1c; color: var(--launch-ink); font-family: 'Nunito Sans', system-ui, sans-serif; }
 .space-backdrop { position: absolute; inset: 0; z-index: -3; background: radial-gradient(ellipse at 49% 32%, #51409a38 0, #14102b44 40%, transparent 70%), linear-gradient(180deg, #070b1b30 0%, #080b1c10 55%, #0b102770 100%), url('/images/moon-launch.png') right bottom / cover no-repeat; }
 .space-backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #080b1c66, transparent 25%, transparent 75%, #080b1c66); }
 .space-stars { position: absolute; inset: 0; pointer-events: none; z-index: -2; opacity: .7; background-image: radial-gradient(1px 1px at 13% 17%, white, transparent), radial-gradient(1px 1px at 77% 38%, #b7b8ff, transparent), radial-gradient(1.5px 1.5px at 26% 68%, #bccfff, transparent), radial-gradient(1px 1px at 85% 81%, white, transparent), radial-gradient(1px 1px at 47% 43%, white, transparent), radial-gradient(1.5px 1.5px at 6% 93%, #dbcdff, transparent); background-size: 283px 257px, 311px 303px, 449px 351px, 313px 293px, 221px 329px, 367px 281px; }
@@ -17,75 +17,42 @@
 }
 .orbit { position: absolute; z-index: -1; pointer-events: none; width: 1300px; height: 680px; border: 1px solid #a69ce610; border-radius: 50%; top: 215px; left: calc(50% - 650px); transform: rotate(-17deg); }
 .orbit-two { width: 1600px; height: 820px; left: calc(50% - 800px); top: 165px; transform: rotate(15deg); }
-.launch-header { max-width: 1490px; margin: auto; padding: 30px 54px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.launch-logo { display: flex; align-items: center; gap: 13px; color: #fff; text-decoration: none; font-size: 29px; line-height: 1; font-weight: 900; letter-spacing: 1.7px; }
-.logo-orbit { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #a993df88; border-radius: 15px; background: #a99ae91a; transform: rotate(-8deg); }
-.logo-orbit svg { color: #d1c2ff; width: 27px; height: 27px; transform: rotate(8deg); }
-.logo-number { color: #b4a7d8; font-weight: 600; }
-.launch-logo small { display: block; font-size: 7px; font-weight: 700; letter-spacing: 1.5px; color: #bcb5d2; margin-top: 8px; }
-.header-right { display: flex; align-items: center; gap: 25px; }
-.mission-label { display: flex; align-items: center; gap: 9px; font-size: 9px; font-weight: 800; letter-spacing: 1.7px; color: #c2b9d5; }
-.mission-label > span { width: 5px; height: 5px; background: #a9e5ce; border-radius: 50%; box-shadow: 0 0 12px #a9e5ce77; }
-.sound-button { width: 39px; height: 39px; display: grid; place-items: center; background: #a6a4d00e; color: #b5afd0; border: 1px solid #b2a4dd38; border-radius: 50%; }
-.sound-button:hover, .sound-button[aria-pressed=true] { color: #fff; border-color: #c7b0ff; }
-.launch-main { max-width: 1110px; margin: 21px auto 0; padding: 0 34px 42px; text-align: center; }
-.adventure-badge { display: inline-flex; align-items: center; gap: 9px; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #d2b8ff; padding: 8px 14px; border-radius: 30px; background: #b093fa0f; border: 1px solid #b49cfa35; }
-.adventure-badge svg { width: 12px; height: 12px; color: #c6a3ff; }
-.launch-main h1 { margin: 15px 0 10px; font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 700; font-size: clamp(40px, 4.5vw, 64px); line-height: 1.02; letter-spacing: -1.6px; text-shadow: 0 3px 28px #080b1c; }
-.launch-main h1 > span { color: #ceb5ff; }
-.launch-intro { font-size: 15px; line-height: 1.7; color: #c3bdd4; margin: 14px 0 31px; }
-.crew-heading { display: flex; align-items: center; justify-content: center; gap: 17px; margin-bottom: 20px; }
-.crew-heading h2 { color: #e7dff8; font-family: 'Nunito Sans', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 2.3px; margin: 0; }
-.crew-heading h2 > span { display: inline-grid; place-items: center; width: 23px; height: 23px; border: 1px solid #bc9af657; border-radius: 50%; margin-right: 7px; color: #c7a7ff; font-size: 9px; letter-spacing: 0; }
-.crew-line { width: 81px; height: 1px; background: linear-gradient(90deg, transparent, #9e88cc55); }
-.crew-line:last-child { transform: rotate(180deg); }
-.astronaut-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
-.astronaut-card { position: relative; color: #f8f5ff; display: flex; flex-direction: column; text-align: left; min-width: 0; overflow: hidden; padding: 15px 16px 16px; border: 1px solid #bfb1e32b; border-radius: 17px; background: linear-gradient(160deg, rgba(var(--suit-rgb), .09), #0b0f25e8 75%); transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; box-shadow: 0 9px 30px #03051144; }
-.astronaut-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(125deg, #ffffff07, transparent 45%); }
-.astronaut-card:hover { transform: translateY(-5px); border-color: rgba(var(--suit-rgb), .7); }
-.astronaut-card.is-selected { transform: translateY(-5px); border-color: var(--suit); box-shadow: 0 0 0 2px rgba(var(--suit-rgb), .16), 0 0 36px rgba(var(--suit-rgb), .13), 0 15px 35px #02040b66; background: linear-gradient(160deg, rgba(var(--suit-rgb), .18), #10132bed 75%); }
-.astronaut-card:focus-visible { outline: 3px solid var(--suit); outline-offset: 5px; }
-.card-topline { display: flex; align-items: center; justify-content: space-between; color: #b5abc9; font-size: 8px; font-weight: 800; letter-spacing: 1.7px; position: relative; z-index: 1; }
-.selection-check { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; border: 1px solid #ada0c74d; color: #aba1c4; font-size: 14px; font-weight: 700; letter-spacing: 0; }
-.is-selected .selection-check { background: var(--suit); color: #201a35; border-color: var(--suit); }
-.astronaut-art { position: relative; display: block; height: 245px; margin: -4px -12px 0; }
-.character-halo { position: absolute; width: 185px; height: 185px; border: 1px solid rgba(var(--suit-rgb), .13); border-radius: 50%; top: 29px; left: calc(50% - 92.5px); background: radial-gradient(ellipse at center, rgba(var(--suit-rgb), .1), transparent 70%); }
-.character-halo::after { content: ''; position: absolute; inset: 13px; border: 1px dashed rgba(var(--suit-rgb), .1); border-radius: 50%; }
-.character-sprite { position: absolute; z-index: 2; inset: 0; display: block; background-image: url('/images/kid-astronauts.png'); background-repeat: no-repeat; background-size: 400% 100%; background-position: var(--sprite-position) center; filter: drop-shadow(0 10px 13px #03051280); transition: transform .3s ease; }
-.is-selected .character-sprite, .astronaut-card:hover .character-sprite { transform: translateY(-3px); }
-.character-platform { position: absolute; z-index: 1; width: 112px; height: 22px; left: calc(50% - 56px); bottom: 8px; border: 1px solid rgba(var(--suit-rgb), .4); border-radius: 50%; background: rgba(var(--suit-rgb), .04); box-shadow: 0 0 16px rgba(var(--suit-rgb), .09); }
-.character-platform::after { content: ''; position: absolute; inset: 4px 13px; border: 1px solid rgba(var(--suit-rgb), .17); border-radius: 50%; }
-.character-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 2px 0 9px; }
-.character-info strong { font-family: 'Baloo 2', sans-serif; font-size: 25px; font-weight: 600; line-height: 1; letter-spacing: .2px; }
-.character-age { font-size: 8px; letter-spacing: 1.5px; color: #bdb1d1; font-weight: 800; }
-.character-suit { border-top: 1px solid #b7a7db20; padding-top: 11px; color: #c4b8d6; font-size: 10px; display: flex; align-items: center; gap: 6px; }
-.character-suit i { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: var(--suit); }
-.selected-word { margin-left: auto; font-size: 7px; letter-spacing: 1.1px; font-weight: 900; color: #ac9ebf; }
-.is-selected .selected-word { color: var(--suit); }
-.crew-note { color: #b0a5c5; font-size: 11px; line-height: 1.7; margin: 17px 0 0; }
-.launch-actions { margin-top: 24px; }
-.commander-message { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 12px; color: #c9c0dc; margin: 0 0 13px; }
-.commander-message strong { color: #f4edff; }
-.ready-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #a9e5ce; margin-right: 3px; box-shadow: 0 0 9px #a9e5ce55; }
-.start-game-button { display: inline-flex; align-items: center; gap: 13px; justify-content: center; min-width: 310px; padding: 16px 23px; border-radius: 12px; border: 1px solid #ffe7a0; background: linear-gradient(180deg, #ffe6a0, #f9c969); color: #30223a; box-shadow: 0 4px 0 #ad7d3f, 0 9px 32px #f4c47122, inset 0 1px #fff7d6; font-family: 'Baloo 2', sans-serif; font-size: 23px; font-weight: 700; line-height: 1; transition: transform .2s ease, box-shadow .2s ease; }
-.start-game-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 #ad7d3f, 0 14px 36px #f4c47144; }
-.start-game-button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #ad7d3f; }
-.start-game-button:disabled { opacity: .65; cursor: not-allowed; }
-.start-arrow { font: 400 25px system-ui, sans-serif; margin-left: 35px; }
-.launch-hint { font-size: 10px; color: #afa2c4; margin: 16px 0 0; line-height: 1.7; }
-.mission-teasers { display: flex; justify-content: center; align-items: center; gap: 24px; color: #d2c6e3; margin-top: 34px; }
-.mission-teasers > span { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
-.mission-teasers svg { color: #b9a2d4; width: 17px; height: 17px; }
-.mission-teasers > i { width: 3px; height: 3px; background: #877294; border-radius: 50%; }
-.launch-footer { max-width: 1490px; padding: 23px 54px; margin: auto; display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid #b49dc11c; color: #b9accb; font-size: 7px; font-weight: 800; letter-spacing: 1.5px; }
-.footer-orbit { margin-left: 5px; font-size: 11px; }
-.launch-error { max-width: 430px; margin: 20px auto 0; padding: 14px 18px; background: #3d1c32e8; border: 1px solid #eea5ba7a; border-radius: 12px; color: #ffdfeb; font-size: 12px; line-height: 1.6; }
-.launch-error p { margin: 0 0 7px; }
-.launch-error > span { color: #dac2d2; font-size: 11px; }
-.launch-loading { min-height: 100svh; display: grid; place-items: center; color: #dec9ff; background: #080b1c; font-family: 'Baloo 2', sans-serif; font-size: 24px; }
-.back-to-launch { color: #c7c9e8; background: transparent; border: 1px solid #4e526e; padding: 10px 13px; border-radius: 7px; cursor: pointer; }
-@media (min-width: 1450px) { .launch-main { margin-top: 35px; } .launch-intro { margin-bottom: 39px; } .astronaut-art { height: 270px; } .character-halo { top: 40px; } .launch-actions { margin-top: 27px; } .mission-teasers { margin-top: 43px; } }
-@media (max-width: 1000px) { .launch-header { padding: 26px 30px; } .launch-main { margin-top: 17px; padding-inline: 28px; } .astronaut-grid { gap: 12px; } .astronaut-card { padding: 13px 13px 15px; } .astronaut-art { height: 220px; margin-inline: -10px; } .character-halo { width: 145px; height: 145px; left: calc(50% - 72.5px); top: 35px; } .launch-main h1 { font-size: 53px; } .launch-footer { padding-inline: 30px; } .launch-footer > span:nth-child(2) { display: none; } }
-@media (max-width: 700px) { .launch-header { padding: 23px 24px; } .launch-logo { font-size: 25px; gap: 10px; } .logo-orbit { width: 39px; height: 39px; border-radius: 12px; } .launch-logo small { font-size: 6px; letter-spacing: 1px; } .mission-label { display: none; } .launch-main { padding: 0 23px 34px; margin-top: 15px; max-width: 530px; } .launch-main h1 { font-size: 46px; } .adventure-badge { font-size: 8px; letter-spacing: 1.4px; } .launch-intro { font-size: 13px; margin-bottom: 25px; } .crew-heading { gap: 10px; margin-bottom: 18px; } .crew-heading h2 { font-size: 8px; letter-spacing: 1.6px; } .crew-line { width: 35px; } .astronaut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 14px; } .astronaut-art { height: 218px; } .character-halo { width: 155px; height: 155px; left: calc(50% - 77.5px); top: 30px; } .crew-note { max-width: 280px; margin: 15px auto 0; } .mission-teasers { gap: 12px; margin-top: 29px; flex-wrap: wrap; } .mission-teasers > span { font-size: 9px; gap: 5px; } .mission-teasers svg { width: 14px; height: 14px; } .launch-footer { padding: 19px 24px; font-size: 6px; letter-spacing: 1.1px; } .space-backdrop { background-position: center, center, 88% bottom; } }
-@media (max-width: 380px) { .launch-main { padding-inline: 18px; } .launch-main h1 { font-size: 40px; } .astronaut-art { height: 185px; } .astronaut-card { padding: 12px 10px; } .character-info strong { font-size: 23px; } .character-halo { width: 130px; height: 130px; left: calc(50% - 65px); } .character-platform { width: 90px; left: calc(50% - 45px); } .selected-word { font-size: 6px; letter-spacing: .5px; } .start-game-button { min-width: 0; width: 100%; } .mission-teasers { gap: 9px; } .mission-teasers > i { display: none; } }
-@media (prefers-reduced-motion: reduce) { .astronaut-card, .character-sprite, .start-game-button { transition: none; } .space-backdrop, .space-stars { animation: none; transform: none; } }
+.launch-header { position: relative; z-index: 20; display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; min-height: var(--launch-header-height); padding: 8px clamp(16px, 4vw, 54px); }
+.launch-logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-size: clamp(23px, 3vw, 29px); line-height: 1; font-weight: 900; letter-spacing: 1.5px; }
+.logo-orbit { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #a993df88; border-radius: 13px; background: #a99ae91a; transform: rotate(-8deg); }
+.logo-orbit svg { color: var(--launch-accent); transform: rotate(8deg); }
+.logo-number { color: var(--launch-accent); font-weight: 600; }
+.sound-button { width: 44px; height: 44px; display: grid; place-items: center; background: var(--launch-panel); color: var(--launch-accent); border: 1px solid var(--launch-border); border-radius: 50%; }
+.sound-button:hover, .sound-button[aria-pressed=true] { color: #fff; border-color: var(--launch-accent); }
+.launch-main { width: min(100%, 1120px); min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: clamp(8px, 2.4dvh, 22px); margin: 0 auto; padding: 6px clamp(12px, 4vw, 36px) clamp(12px, 4dvh, 36px); }
+.launch-main h1, .briefing-welcome h1 { margin: 0; font: 800 clamp(30px, min(6vw, 8dvh), 62px)/1.05 'Baloo 2', system-ui, sans-serif; letter-spacing: -.03em; }
+.launch-main h1 { text-align: center; text-shadow: 0 3px 24px #080b1c; }
+.launch-main h1 > span, .briefing-welcome h1 > span { color: var(--launch-accent); }
+.astronaut-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); align-self: center; width: 100%; height: min(100%, 440px); gap: clamp(8px, 1.8vw, 18px); }
+.astronaut-card { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 4px; min-width: 0; min-height: 0; padding: clamp(6px, 1.4vw, 16px); text-align: center; color: var(--launch-ink); border: 1px solid var(--launch-border); border-radius: 18px; background: linear-gradient(160deg, rgba(var(--suit-rgb), .19), transparent 70%), var(--launch-panel); box-shadow: 0 9px 30px #03051144; }
+.astronaut-card:hover, .astronaut-card.is-selected { border-color: var(--suit); }
+.astronaut-card.is-selected { box-shadow: inset 0 0 0 1px var(--suit), 0 0 24px rgba(var(--suit-rgb), .24); }
+.astronaut-card:focus-visible { outline: 2px solid var(--suit); outline-offset: 2px; }
+.selection-check { position: absolute; top: 7px; right: 7px; z-index: 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--suit); color: #201a35; font-size: 16px; font-weight: 900; }
+.astronaut-art { position: relative; display: grid; place-items: center; min-height: 0; min-width: 0; container-type: size; }
+.character-halo { position: absolute; width: min(82%, 66cqh); aspect-ratio: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(var(--suit-rgb), .26); border-radius: 50%; background: radial-gradient(circle, rgba(var(--suit-rgb), .2), transparent 72%); }
+.character-sprite { z-index: 1; width: min(100%, 73cqh); aspect-ratio: 226 / 308; }
+.character-sprite, .portrait-sprite { background: url('/images/kid-astronauts.png') var(--sprite-position) center / 400% 100% no-repeat; filter: drop-shadow(0 8px 10px #08071688); }
+.character-info { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 8px; }
+.character-info strong { font: 800 clamp(22px, 3.6vw, 34px)/1 'Baloo 2', sans-serif; }
+.character-age { color: #e4d8f8; font-size: clamp(14px, 2.2vw, 17px); font-weight: 800; white-space: nowrap; }
+.start-game-button, .game-screen .outpost-primary { display: inline-flex; justify-content: center; align-items: center; gap: 14px; min-height: 48px; padding: 8px 26px; border: 1px solid #ffe7a0; border-radius: 12px; background: linear-gradient(180deg, #ffe6a0, #f9c969); color: #30223a; box-shadow: 0 3px 0 #ad7d3f; font: 800 clamp(21px, 3vw, 27px)/1 'Baloo 2', sans-serif; text-decoration: none; }
+.start-game-button { min-width: min(240px, 100%); }
+.start-game-button:hover, .game-screen .outpost-primary:hover:not(:disabled) { background: #ffedb7; }
+.back-to-launch { color: #c7c9e8; background: transparent; border: 1px solid #4e526e; padding: 10px 13px; border-radius: 7px; }
+@media (max-width: 620px) and (orientation: portrait) {
+  .astronaut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); height: min(100%, 560px); }
+}
+@media (max-height: 430px) {
+  .launch-page { --launch-header-height: 54px; }
+  .launch-main { gap: 8px; }
+  .astronaut-card { border-radius: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-backdrop, .space-stars { animation: none; transform: none; }
+}

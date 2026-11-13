@@ -2,6 +2,7 @@
 class MissionEngine
   class InvalidAction < StandardError; end
   RESOURCES = %w[oxygen power food radiation].freeze
+  RADIATION_LIMIT = 80
   DAILY_COST = { "oxygen" => -14, "power" => -10, "food" => -12 }.freeze
   INITIAL_STATE = { "day" => 1, "oxygen" => 62, "power" => 70, "food" => 60, "radiation" => 10, "status" => "playing" }.freeze
 
@@ -37,7 +38,7 @@ class MissionEngine
       "The outpost ran out of power. Keep an energy reserve for life support."
     elsif next_state["food"].zero?
       "The crew ran out of food. Plan a harvest before supplies get too low."
-    elsif next_state["radiation"] >= 80
+    elsif next_state["radiation"] >= RADIATION_LIMIT
       "Exposure reached the game's safety limit. Try spending less time outside."
     end
 

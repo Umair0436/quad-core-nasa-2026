@@ -1,0 +1,24 @@
+.briefing-main { display: grid; place-items: center; width: 100%; min-height: 0; padding: 6px clamp(12px, 4vw, 30px) clamp(12px, 4dvh, 34px); }
+.briefing-welcome { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); align-items: center; width: min(100%, 960px); height: min(100%, 510px); gap: clamp(14px, 4vw, 48px); padding: clamp(16px, 4vmin, 42px); background: var(--launch-panel); border: 1px solid var(--launch-border); border-radius: 24px; box-shadow: 0 24px 70px #03061250; }
+.briefing-portrait { display: grid; place-items: center; align-self: stretch; min-height: 0; container-type: size; background: radial-gradient(circle, rgba(var(--suit-rgb), .25), transparent 66%); }
+.portrait-sprite { width: min(100%, 73cqh); aspect-ratio: 226 / 308; }
+.briefing-welcome-copy { min-width: 0; }
+.briefing-welcome-copy > p { margin: 6px 0 8px; color: #ebe2fa; font-size: clamp(17px, 3vmin, 23px); font-weight: 800; }
+.briefing-days { display: grid; gap: clamp(4px, 1dvh, 10px); margin: 0 0 clamp(8px, 2dvh, 18px); padding-left: 1.45em; color: #f1e8ff; font-size: clamp(17px, 2.9vmin, 22px); font-weight: 700; line-height: 1.3; }
+.briefing-days li::marker { color: var(--launch-accent); font-weight: 900; }
+.briefing-welcome .start-game-button { display: flex; width: fit-content; }
+.change-astronaut { display: inline-flex; align-items: center; min-height: 44px; color: #e4d6fa; font-size: 16px; font-weight: 800; text-underline-offset: 3px; }
+.briefing-eyebrow { display: block; color: #cfb2ff; font-size: 9px; font-weight: 900; letter-spacing: 2px; margin-bottom: 15px; }
+@media (max-width: 620px) and (orientation: portrait) {
+  .briefing-welcome { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; max-width: 460px; height: min(100%, 640px); gap: 8px; }
+  .briefing-welcome .start-game-button { width: 100%; }
+}
+@media (max-height: 430px) {
+  .briefing-welcome { padding-block: 10px; }
+  .briefing-welcome h1 { font-size: clamp(24px, 7dvh, 32px); }
+}
+@media (max-height: 375px) and (orientation: landscape) {
+  .briefing-welcome-copy > p { margin-block: 2px 4px; }
+  .briefing-days { gap: 2px; margin-bottom: 5px; line-height: 1.15; }
+  .briefing-welcome .start-game-button { min-height: 44px; }
+}
