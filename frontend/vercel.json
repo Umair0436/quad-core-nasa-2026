@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "functions": {
+    "api/**/*.rb": { "includeFiles": "lib/**" }
+  },
+  "rewrites": [
+    { "source": "/outpost/:astronaut", "destination": "/index.html" },
+    { "source": "/briefing/:astronaut", "destination": "/index.html" }
+  ]
+}

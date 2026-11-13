@@ -1,3 +1,5 @@
+require "json"
+
 # Simplified game points, not NASA measurements or a physical simulation.
 class MissionEngine
   class InvalidAction < StandardError; end
@@ -7,7 +9,7 @@ class MissionEngine
   INITIAL_STATE = { "day" => 1, "oxygen" => 62, "power" => 70, "food" => 60, "radiation" => 10, "status" => "playing" }.freeze
 
   def self.decisions
-    @decisions ||= JSON.parse(Rails.root.join("config/missions.json").read)
+    @decisions ||= JSON.parse(File.read(File.join(__dir__, "missions.json")))
   end
 
   def self.start
