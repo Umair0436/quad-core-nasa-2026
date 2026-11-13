@@ -8,7 +8,7 @@ A space adventure prototype for kids ages 7–12, created for the NASA Space App
 2. Read a personalized mission briefing and learn what your crew needs.
 3. Walk through a 3D Moon outpost as your selected astronaut, make three daily decisions, and see their consequences.
 
-Gameplay fills the browser window, with a Fullscreen button for the whole display. Move with WASD, the arrow keys, or the on-screen controls; press E near a building to interact. Clicking a building guides your astronaut there. The camera follows from behind. Each character keeps their own suit color, skin tone, and hairstyle in the 3D scene. The mission panel opens over the world when needed. An illustrated outpost is available if WebGL is unavailable. The Rails API calculates oxygen, power, food, and radiation game points. Each choice shows a learning step before the next day. The game includes success and failure reports, replay, and a choice log. Progress is saved in browser session storage for the selected astronaut and can be resumed on refresh. A saved mission older than 90 minutes starts fresh; Rails tokens expire after two hours.
+Gameplay fills the browser window, with a Fullscreen button for the whole display. Move with WASD, the arrow keys, or the on-screen controls; press E near a building to interact. Clicking a building guides your astronaut there. The camera follows from behind. The astronaut in the outpost uses a poseable 3D model based on the selection and briefing artwork. The mission panel opens over the world when needed. An illustrated outpost is available if WebGL is unavailable. The Rails API calculates oxygen, power, food, and radiation game points. Each choice shows a learning step before the next day. The game includes success and failure reports, replay, and a choice log. Progress is saved in browser session storage for the selected astronaut and can be resumed on refresh. A saved mission older than 90 minutes starts fresh; Rails tokens expire after two hours.
 
 ## Run the full game
 
@@ -62,7 +62,7 @@ The Rails tests cover all eight decision paths, resource bounds, mission complet
 - `frontend/src/MissionBriefing.tsx`: personalized mission briefing.
 - `frontend/src/MoonOutpost.tsx`: active gameplay page, learning steps, progress, and report.
 - `frontend/src/components/ThirdPersonOutpost.tsx`: walking controls, camera follow, and interaction.
-- `frontend/src/components/Astronaut3D.tsx`: animated child astronaut meshes and character appearances.
+- `frontend/src/components/Astronaut3D.tsx`: articulated astronaut models in the 3D outpost.
 - `frontend/src/components/MoonEnvironment3D.tsx`: buildings, lunar terrain, stars, and Earth.
 - `frontend/src/components/moonWorld.ts`: collisions and guided walking paths.
 - `frontend/src/launch.css`, `briefing.css`, `outpost.css`, and `fullscreen-game.css`: page and game overlay styles.

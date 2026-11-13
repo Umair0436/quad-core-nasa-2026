@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { CanvasTexture, CatmullRomCurve3, Color, Group, PlaneGeometry, RepeatWrapping, SRGBColorSpace, Shape, Vector3 } from 'three';
-import { MOON_BUILDINGS } from './moonWorld';
+import { BUILDING_SCALE, MOON_BUILDINGS } from './moonWorld';
 import type { BuildingId } from './moonWorld';
 
 function makeMoonTexture() {
@@ -83,7 +83,7 @@ function Portal({ color, z, open }: { color: string; z: number; open: boolean })
   }, []);
   return <group position={[0, .12, z]}>
     <mesh castShadow><extrudeGeometry args={[arch, { depth: .18, bevelEnabled: true, bevelThickness: .05, bevelSize: .05, bevelSegments: 2, steps: 1 }]} /><meshStandardMaterial color="#7a858e" metalness={.5} roughness={.54} /></mesh>
-    <mesh position={[0, .09, .24]} scale={[.8, .86, .15]}><extrudeGeometry args={[arch, { depth: .08, bevelEnabled: false }]} /><meshStandardMaterial color="#25333a" emissive={color} emissiveIntensity={open ? .44 : .06} roughness={.74} /></mesh>
+    <mesh position={[0, .09, .24]} scale={[.8, .86, .15]}><extrudeGeometry args={[arch, { depth: .08, bevelEnabled: false }]} /><meshStandardMaterial color="#25333a" emissive={color} emissiveIntensity={open ? .65 : .24} roughness={.74} /></mesh>
     {[-1, 1].map((side) => <group key={side} ref={side < 0 ? left : right} position={[side * .245, .68, .31]}>
       <mesh castShadow><boxGeometry args={[.48, 1.18, .105]} /><meshStandardMaterial color="#454f58" metalness={.42} roughness={.58} /></mesh>
       <mesh position={[0, .23, .06]}><boxGeometry args={[.24, .19, .026]} /><meshStandardMaterial color="#253e4d" metalness={.3} roughness={.3} /></mesh>
@@ -98,8 +98,8 @@ function Portal({ color, z, open }: { color: string; z: number; open: boolean })
 
 function Habitat({ open }: { open: boolean }) {
   return <>
-    <mesh position={[0, .18, 0]} receiveShadow castShadow><cylinderGeometry args={[2.8, 2.9, .36, 36]} /><meshStandardMaterial color="#aebacc" metalness={.4} roughness={.6} /></mesh>
-    <mesh position={[0, 1.45, 0]} castShadow><cylinderGeometry args={[2.48, 2.55, 2.5, 36]} /><meshStandardMaterial color="#adb7bf" metalness={.25} roughness={.6} /></mesh>
+    <mesh position={[0, .18, 0]} receiveShadow castShadow><cylinderGeometry args={[2.8, 2.9, .36, 36]} /><meshStandardMaterial color="#ece4f7" metalness={.4} roughness={.6} /></mesh>
+    <mesh position={[0, 1.45, 0]} castShadow><cylinderGeometry args={[2.48, 2.55, 2.5, 36]} /><meshStandardMaterial color="#d6d9ee" metalness={.25} roughness={.6} /></mesh>
     {[.45, 2.5].map((y) => <mesh key={y} position={[0, y, 0]}><cylinderGeometry args={[2.58, 2.58, .12, 36]} /><meshStandardMaterial color="#8295ad" metalness={.6} roughness={.4} /></mesh>)}
     <mesh position={[0, 2.74, 0]} scale={[1, .48, 1]} castShadow><sphereGeometry args={[1.7, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#374a58" metalness={.5} roughness={.25} /></mesh>
     <mesh position={[0, 2.78, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[1.7, .065, 8, 40]} /><meshBasicMaterial color="#82e9ed" /></mesh>
@@ -120,7 +120,7 @@ function Habitat({ open }: { open: boolean }) {
 
 function Shelter({ open }: { open: boolean }) {
   return <>
-    <mesh scale={[1, .74, 1]} castShadow><sphereGeometry args={[2.85, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#929591" metalness={.3} roughness={.6} /></mesh>
+    <mesh scale={[1, .74, 1]} castShadow><sphereGeometry args={[2.85, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#cab9a8" metalness={.3} roughness={.6} /></mesh>
     {[0, Math.PI / 3, Math.PI * 2 / 3].map((angle) => <mesh key={angle} rotation={[0, angle, 0]} scale={[1, .74, 1]}><torusGeometry args={[2.88, .065, 8, 48, Math.PI]} /><meshStandardMaterial color="#6f7c94" metalness={.4} /></mesh>)}
     {[-1, 1].flatMap((side) => [0, 1, 2, 3].map((i) => <mesh key={`${side}-${i}`} position={[side * (2 + i * .15), .4, -1.5 + i * .7]} scale={[.8, .52, .7]} castShadow><icosahedronGeometry args={[1, 1]} /><meshStandardMaterial color={i % 2 ? '#6f7477' : '#9a9890'} roughness={1} /></mesh>))}
     <Portal color="#ffd08a" z={2.57} open={open} />
@@ -139,7 +139,7 @@ function Greenhouse({ open }: { open: boolean }) {
   }), []);
   return <>
     <mesh position={[0, .16, 0]} receiveShadow castShadow><cylinderGeometry args={[2.86, 2.95, .32, 40]} /><meshStandardMaterial color="#9da9a9" metalness={.3} roughness={.6} /></mesh>
-    <mesh position={[0, .25, 0]}><sphereGeometry args={[2.7, 32, 24, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#b7e2e3" transparent opacity={.23} roughness={.1} metalness={.15} depthWrite={false} /></mesh>
+    <mesh position={[0, .25, 0]}><sphereGeometry args={[2.7, 32, 24, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#92dfcd" transparent opacity={.29} roughness={.1} metalness={.15} depthWrite={false} /></mesh>
     {meridians.map((curve, i) => <mesh key={i}><tubeGeometry args={[curve, 24, .045, 6, false]} /><meshStandardMaterial color="#9aa6a8" metalness={.4} /></mesh>)}
     {[Math.PI / 6, Math.PI / 3, Math.PI / 2].map((angle) => <mesh key={angle} position={[0, Math.cos(angle) * 2.7 + .26, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[Math.sin(angle) * 2.7, .04, 6, 40]} /><meshStandardMaterial color="#9aa6a8" metalness={.4} /></mesh>)}
     {[-1.35, -.45, .45, 1.35].flatMap((x, row) => [-1, 0, 1].map((z, column) => <group key={`${x}-${z}`} position={[x, .3, z]}>
@@ -161,10 +161,10 @@ function Beacon({ color }: { color: string }) {
 function GroundPath({ x, z }: { x: number; z: number }) {
   const distance = Math.hypot(x, z);
   return <group>
-    <mesh position={[x / 2, .012, z / 2]} rotation={[-Math.PI / 2, 0, Math.atan2(x, z)]} receiveShadow><planeGeometry args={[1.1, distance]} /><meshStandardMaterial color="#787971" roughness={1} /></mesh>
+    <mesh position={[x / 2, .012, z / 2]} rotation={[-Math.PI / 2, 0, Math.atan2(x, z)]} receiveShadow><planeGeometry args={[1.55, distance]} /><meshStandardMaterial color="#8d849b" roughness={1} /></mesh>
     {Array.from({ length: Math.max(2, Math.floor(distance / 1.5)) }, (_, index) => {
       const t = (index + .5) / Math.max(2, Math.floor(distance / 1.5));
-      return <mesh key={index} position={[x * t + .65, .18, z * t]}><cylinderGeometry args={[.05, .07, .36, 7]} /><meshStandardMaterial color="#e7edf1" emissive="#8ae2d3" emissiveIntensity={.4} /></mesh>;
+      return <mesh key={index} position={[x * t + .65, .18, z * t]}><cylinderGeometry args={[.065, .065, .44, 8]} /><meshStandardMaterial color="#e7edf1" emissive="#8ae2d3" emissiveIntensity={.4} /></mesh>;
     })}
   </group>;
 }
@@ -200,19 +200,22 @@ export default function MoonEnvironment3D({ active, near, onWalkTo }: { active?:
 
   return <>
     <color attach="background" args={['#080b1c']} /><fog attach="fog" args={['#242139', 48, 132]} />
-    <hemisphereLight args={['#ddd6ff', '#686478', 1.03]} />
+    <hemisphereLight args={['#ebe2ff', '#716388', 1.25]} />
     <ambientLight intensity={.19} />
     <directionalLight position={[-19, 15, 7]} color="#fff2dc" intensity={2.7} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-24} shadow-camera-right={24} shadow-camera-top={24} shadow-camera-bottom={-24} shadow-normalBias={.035} />
-    <directionalLight position={[16, 8, -16]} color="#ae9ee8" intensity={.85} />
-    <mesh geometry={terrain} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><meshStandardMaterial map={moon} bumpMap={moon} bumpScale={.073} color="#bfc3c4" roughness={1} /></mesh>
+    <directionalLight position={[16, 8, -16]} color="#b39bff" intensity={1.35} />
+    <mesh geometry={terrain} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><meshStandardMaterial map={moon} bumpMap={moon} bumpScale={.048} color="#bdb7cf" roughness={1} /></mesh>
     <points><bufferGeometry><bufferAttribute attach="attributes-position" args={[stars.positions, 3]} /><bufferAttribute attach="attributes-color" args={[stars.colors, 3]} /></bufferGeometry><pointsMaterial size={.17} vertexColors sizeAttenuation fog={false} /></points>
-    <group ref={earthGroup} position={[25, 13, -80]}>
-      <mesh rotation={[0, -.8, .2]}><sphereGeometry args={[4.4, 40, 28]} /><meshStandardMaterial map={earth} emissive="#1d5599" emissiveIntensity={.2} roughness={.8} fog={false} /></mesh>
-      <mesh><sphereGeometry args={[4.55, 32, 24]} /><meshBasicMaterial color="#88c7ff" transparent opacity={.1} depthWrite={false} fog={false} /></mesh>
+    <group ref={earthGroup} position={[22, 17, -80]}>
+      <mesh rotation={[0, -.8, .2]}><sphereGeometry args={[6.1, 48, 32]} /><meshStandardMaterial map={earth} emissive="#1d5599" emissiveIntensity={.2} roughness={.8} fog={false} /></mesh>
+      <mesh><sphereGeometry args={[6.28, 40, 28]} /><meshBasicMaterial color="#88c7ff" transparent opacity={.1} depthWrite={false} fog={false} /></mesh>
     </group>
     {MOON_BUILDINGS.map((building) => <group key={building.id} position={[building.x, 0, building.z]} onClick={(event) => { event.stopPropagation(); onWalkTo(building.id); }}>
-      {building.id === 'habitat' ? <Habitat open={near === building.id} /> : building.id === 'shelter' ? <Shelter open={near === building.id} /> : <Greenhouse open={near === building.id} />}
-      {active === building.id && <><mesh position={[0, .045, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[building.radius + .1, building.radius + .19, 60]} /><meshBasicMaterial color={building.color} transparent opacity={.7} /></mesh><Beacon color={building.color} /></>}
+      <group scale={BUILDING_SCALE}>
+        {building.id === 'habitat' ? <Habitat open={near === building.id} /> : building.id === 'shelter' ? <Shelter open={near === building.id} /> : <Greenhouse open={near === building.id} />}
+        {active === building.id && <Beacon color={building.color} />}
+      </group>
+      {active === building.id && <><mesh position={[0, .045, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[building.radius + .1, building.radius + .19, 60]} /><meshBasicMaterial color={building.color} transparent opacity={.7} /></mesh></>}
     </group>)}
     {MOON_BUILDINGS.map((building) => <GroundPath key={building.id} {...building.door} />)}
     <group position={[-11, .75, 4]}>

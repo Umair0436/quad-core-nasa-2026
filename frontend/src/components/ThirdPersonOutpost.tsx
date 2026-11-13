@@ -5,7 +5,7 @@ import { Vector3 } from 'three';
 import Astronaut3D from './Astronaut3D';
 import type { ExplorerPose } from './Astronaut3D';
 import MoonEnvironment3D from './MoonEnvironment3D';
-import { findMoonPath, MOON_BUILDINGS, moveOnMoon, nearbyBuilding, SPAWN } from './moonWorld';
+import { BUILDING_SCALE, findMoonPath, MOON_BUILDINGS, moveOnMoon, nearbyBuilding, SPAWN } from './moonWorld';
 import type { BuildingId, Point } from './moonWorld';
 import './third-person.css';
 
@@ -14,7 +14,7 @@ type Input = { forward: boolean; back: boolean; left: boolean; right: boolean; a
 type Command = { path: Point[]; resetCamera: boolean };
 type Orbit = { yaw: number; pitch: number; distance: number };
 type Drag = { id: number; x: number; y: number; startX: number; startY: number };
-const DEFAULT_ORBIT: Orbit = { yaw: 0, pitch: .37, distance: 8.8 };
+const DEFAULT_ORBIT: Orbit = { yaw: 0, pitch: .37, distance: 8.4 };
 
 function cameraArm(position: Point, yaw: number, pitch: number, distance: number) {
   const dx = Math.sin(yaw);
@@ -28,7 +28,7 @@ function cameraArm(position: Point, yaw: number, pitch: number, distance: number
     const offsetSquared = x * x + z * z - along * along;
     if (along <= 0 || offsetSquared >= radius * radius) continue;
     const hit = along - Math.sqrt(radius * radius - offsetSquared);
-    if (hit > 0 && 1.55 + Math.tan(pitch) * hit < 3.65) length = Math.min(length, Math.max(.32, hit - .2));
+    if (hit > 0 && 1.55 + Math.tan(pitch) * hit < 3.65 * BUILDING_SCALE) length = Math.min(length, Math.max(.32, hit - .2));
   }
   return length;
 }
@@ -70,7 +70,7 @@ function ExplorerController({ pose, input, command, orbit, enabled, root, labels
     state.moving = distance > .0001;
     if (state.moving) {
       state.angle = Math.atan2(next.x - state.position.x, next.z - state.position.z);
-      state.walk += distance * 4.2;
+      state.distance += distance;
       state.position = next;
     }
     const near = nearbyBuilding(state.position);
@@ -81,10 +81,10 @@ function ExplorerController({ pose, input, command, orbit, enabled, root, labels
     const height = Math.max(3.2, 1.55 + Math.sin(pitch) * cameraDistance);
     desired.current.set(state.position.x + sinYaw * arm, height, state.position.z + cosYaw * arm);
     // Look past the astronaut so the outpost stays visible ahead.
-    const sideOffset = size.width / size.height > 1.25 ? -.95 : 0;
+    const sideOffset = size.width / size.height > 1.25 ? -1.5 : 0;
     target.current.set(
       state.position.x - sinYaw * 2.2 + cosYaw * sideOffset,
-      2.4,
+      2.8,
       state.position.z - cosYaw * 2.2 - sinYaw * sideOffset,
     );
     if (command.current.resetCamera) {
@@ -97,7 +97,7 @@ function ExplorerController({ pose, input, command, orbit, enabled, root, labels
     MOON_BUILDINGS.forEach((building, index) => {
       const label = labels.current[index];
       if (!label) return;
-      projected.current.set(building.x, 4.35, building.z).project(camera);
+      projected.current.set(building.x, 4.7 * BUILDING_SCALE, building.z).project(camera);
       const visible = projected.current.z < 1 && projected.current.z > -1 && Math.abs(projected.current.x) < 1.1 && Math.abs(projected.current.y) < 1.1;
       label.style.visibility = visible ? 'visible' : 'hidden';
       label.style.transform = `translate3d(${(projected.current.x * .5 + .5) * size.width}px,${(-projected.current.y * .5 + .5) * size.height}px,0) translate(-50%,-100%)`;
@@ -109,7 +109,7 @@ function ExplorerController({ pose, input, command, orbit, enabled, root, labels
       root.current.dataset.cameraX = camera.position.x.toFixed(2); root.current.dataset.cameraZ = camera.position.z.toFixed(2);
       root.current.dataset.nearby = near ?? '';
     }
-  });
+  }, -1);
   return null;
 }
 
@@ -123,7 +123,7 @@ class RendererBoundary extends Component<{ children: ReactNode; onFailure: () =>
 const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPersonOutpost({ astronautId, suitColor, active, enabled, pauseLabel = 'Choose an action to continue.', onInteract, onNearChange }, ref) {
   const root = useRef<HTMLDivElement>(null);
   const labels = useRef<(HTMLSpanElement | null)[]>([]);
-  const pose = useRef<ExplorerPose>({ position: { ...SPAWN }, angle: Math.PI, moving: false, walk: 0 });
+  const pose = useRef<ExplorerPose>({ position: { ...SPAWN }, angle: Math.PI, moving: false, distance: 0, reset: 0 });
   const input = useRef<Input>({ forward: false, back: false, left: false, right: false, active: false });
   const command = useRef<Command>({ path: [], resetCamera: true });
   const orbit = useRef<Orbit>({ ...DEFAULT_ORBIT });
@@ -190,7 +190,7 @@ const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPerso
 
   useImperativeHandle(ref, () => ({
     walkTo, focus: () => focus(true),
-    reset: () => { stop(); pose.current.position = { ...SPAWN }; pose.current.angle = Math.PI; pose.current.walk = 0; resetCamera(); command.current.resetCamera = true; },
+    reset: () => { stop(); pose.current.position = { ...SPAWN }; pose.current.angle = Math.PI; pose.current.distance = 0; pose.current.reset += 1; resetCamera(); command.current.resetCamera = true; },
   }), [walkTo, focus, stop, resetCamera]);
 
   const failure = useCallback(() => setFailed(true), []);

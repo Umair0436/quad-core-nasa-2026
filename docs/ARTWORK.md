@@ -28,4 +28,4 @@ Use case: stylized-concept. Asset type: interactive illustrated Moon outpost map
 
 ## Playable 3D scene
 
-The active outpost uses code-created Three.js meshes and procedural textures for the lunar terrain, buildings, Earth, and animated astronauts. The selected character determines the suit and helmet color, skin tone, and hairstyle. The generated map above remains the fallback when WebGL is unavailable.
+The active outpost uses code-created Three.js meshes and procedural textures for the lunar terrain, buildings, and Earth. The playable 3D astronaut follows the selected portrait’s suit palette and hairstyle, with articulated legs, arms, and head. The generated map above remains the fallback when WebGL is unavailable.

@@ -1,14 +1,19 @@
 export type Point = { x: number; z: number };
 export type BuildingId = 'habitat' | 'shelter' | 'greenhouse';
 export const SPAWN: Point = { x: 0, z: 8 };
-export const WALK_SPEED = 4.2;
+export const WALK_SPEED = 2.55;
 export const WORLD_EDGE = 19;
 export const PLAYER_RADIUS = 0.42;
+export const BUILDING_SCALE = 1.28;
 export const MOON_BUILDINGS = [
   { id: 'habitat' as const, name: 'Habitat', x: -6.5, z: -5, radius: 3.05, door: { x: -6.5, z: -0.65 }, color: '#8ae2d3' },
-  { id: 'shelter' as const, name: 'Storm shelter', x: 6.5, z: -9, radius: 3.25, door: { x: 6.5, z: -4.5 }, color: '#ffd08a' },
-  { id: 'greenhouse' as const, name: 'Greenhouse', x: 7, z: 2.5, radius: 3.05, door: { x: 7, z: 6.8 }, color: '#b7d990' },
-];
+  { id: 'shelter' as const, name: 'Storm shelter', x: 6.5, z: -11, radius: 3.25, door: { x: 6.5, z: -6.5 }, color: '#ffd08a' },
+  { id: 'greenhouse' as const, name: 'Greenhouse', x: 7, z: .7, radius: 3.05, door: { x: 7, z: 5 }, color: '#b7d990' },
+].map(({ door, ...building }) => ({
+  ...building,
+  radius: building.radius * BUILDING_SCALE,
+  door: { x: door.x, z: building.z + (door.z - building.z) * BUILDING_SCALE },
+}));
 const obstacles = [
   ...MOON_BUILDINGS,
   { x: -11, z: 4, radius: 2.1 },
