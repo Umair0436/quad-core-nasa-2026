@@ -6,9 +6,12 @@ A space adventure prototype for kids ages 7–12, created for the NASA Space App
 
 1. Choose one of four child astronauts, each with a different suit color.
 2. Read a personalized mission briefing and learn what your crew needs.
-3. Walk through a 3D Moon outpost as your selected astronaut, make three daily decisions, and see their consequences.
+3. Walk to a marked site, read the science note, and pick it up.
+4. Return to the Research Lab and select **Submit** to earn an upgrade.
 
-Gameplay fills the browser window, with a Fullscreen button for the whole display. Move with WASD, the arrow keys, or the on-screen controls; press E near a building to interact. Clicking a building guides your astronaut there. The camera follows from behind. The astronaut in the outpost uses a poseable 3D model based on the selection and briefing artwork. The mission panel opens over the world when needed. An illustrated outpost is available if WebGL is unavailable. The Rails API calculates oxygen, power, food, and radiation game points. Each choice shows a learning step before the next day. The game includes success and failure reports, replay, and a choice log. Progress is saved in browser session storage for the selected astronaut and can be resumed on refresh. A saved mission older than 90 minutes starts fresh; Rails tokens expire after two hours.
+Walking uses oxygen, water, food, and power. Refill at Habitat or finish a delivery to top up. Deliveries unlock more solar power, extra greenhouse food capacity, and Horizon Base. The game saves each astronaut’s current mission and supplies in browser session storage.
+
+Use WASD, arrow keys, touch controls, or the mission buttons to walk. Press **E** near a location to interact. The camera starts behind the astronaut and keeps its angle as you walk. Drag or use **Q** and **R** to rotate it. Press **C** to center the view behind your astronaut. The illustrated outpost is available when WebGL is unavailable.
 
 ## Run the full game
 
@@ -37,7 +40,7 @@ cd frontend
 npm run dev
 ```
 
-The selection and briefing pages work without Rails; gameplay needs the API. Start mission opens the outpost in the same app at the direct `/outpost/nova` page URL. Existing `/#briefing/nova` and `/#outpost/nova` links also work (also `leo`, `maya`, and `kai`). Use the mission report's Play again button to reset the current astronaut's mission.
+The research missions run in the browser. Rails and the Vercel Ruby endpoints serve the earlier decision API. Start mission opens the outpost in the same app at the direct `/outpost/nova` page URL. Existing `/#briefing/nova` and `/#outpost/nova` links also work (also `leo`, `maya`, and `kai`).
 
 ## Verify
 
@@ -60,7 +63,8 @@ The Rails tests cover all eight decision paths, resource bounds, mission complet
 - `frontend/src/App.tsx`: astronaut selection and page navigation.
 - `frontend/src/navigation.ts`: direct-path and legacy hash route parsing.
 - `frontend/src/MissionBriefing.tsx`: personalized mission briefing.
-- `frontend/src/MoonOutpost.tsx`: active gameplay page, learning steps, progress, and report.
+- `frontend/src/MoonOutpost.tsx`: research mission UI, pickup and lab submission.
+- `frontend/src/researchMission.ts`: supplies, research notes, and upgrades.
 - `frontend/src/components/ThirdPersonOutpost.tsx`: walking controls, camera follow, and interaction.
 - `frontend/src/components/Astronaut3D.tsx`: articulated astronaut models in the 3D outpost.
 - `frontend/src/components/MoonEnvironment3D.tsx`: buildings, lunar terrain, stars, and Earth.
@@ -74,4 +78,4 @@ The Rails tests cover all eight decision paths, resource bounds, mission complet
 
 ## Science status
 
-No NASA dataset is integrated yet. All simulation values are invented game points; the solar alert is simulated. These are not physical measurements or predictions of radiation dose. Real dataset integration and a scientific review remain planned. The in-game science panel states these limits.
+Supply meters use game points. The in-game science panel links to NASA background on Moon ice, growing plants in space, and solar storm shielding.

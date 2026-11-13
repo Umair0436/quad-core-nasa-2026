@@ -93,3 +93,15 @@
   .game-screen .explorer-dpad { display: grid; }
   .game-screen .explorer-controls .desktop-controls { display: none; }
 }
+
+.game-screen .research-objective { width: min(350px, calc(100% - 24px)); }
+.game-screen .research-objective p { font-size: 15px; }
+.game-screen .research-objective .outpost-primary { min-height: 44px; }
+.research-secondary { display: block; width: 100%; min-height: 44px; border: 0; background: transparent; color: #e9d8ff; text-align: center; font-weight: 800; text-underline-offset: 3px; }
+.research-secondary:hover { text-decoration: underline; }
+.research-panel h3 { margin: 0 0 6px; color: #dfcbff; font: 700 20px/1.1 'Baloo 2', sans-serif; }
+@media (max-height: 460px) {
+  .game-screen .research-objective { top: auto; bottom: 45px; padding: 9px 12px; }
+  .game-screen .research-objective h2 { font-size: 18px; }
+  .game-screen .research-objective p { margin-block: 2px 5px; font-size: 13px; }
+}

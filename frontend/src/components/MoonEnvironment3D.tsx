@@ -169,7 +169,42 @@ function GroundPath({ x, z }: { x: number; z: number }) {
   </group>;
 }
 
-export default function MoonEnvironment3D({ active, near, onWalkTo }: { active?: BuildingId; near: BuildingId | null; onWalkTo: (id: BuildingId) => void }) {
+function ResearchLab({ open }: { open: boolean }) {
+  return <group>
+    <mesh position={[0, .18, 0]} castShadow receiveShadow>
+      <cylinderGeometry args={[1.92, 2.05, .36, 8]} /><meshStandardMaterial color="#685880" />
+    </mesh>
+    <mesh position={[0, 1.29, 0]} castShadow>
+      <cylinderGeometry args={[1.66, 1.84, 2.38, 8]} /><meshStandardMaterial color="#e4d8f4" roughness={.48} />
+    </mesh>
+    <mesh position={[0, 2.48, 0]}>
+      <cylinderGeometry args={[1.54, 1.76, .28, 8]} /><meshStandardMaterial color="#625186" />
+    </mesh>
+    <mesh position={[0, 2.75, 0]} scale={[1, .43, 1]}>
+      <sphereGeometry args={[1.3, 24, 16]} /><meshStandardMaterial color="#8a80bf" emissive="#58469c" emissiveIntensity={.38} />
+    </mesh>
+    <mesh position={[0, 2.30, 1.61]}>
+      <boxGeometry args={[1.4, .24, .08]} /><meshBasicMaterial color="#d4b5ff" />
+    </mesh>
+    <Portal color="#d4b5ff" z={1.75} open={open} />
+  </group>;
+}
+
+function IceRidge({ active }: { active: boolean }) {
+  return <group>
+    {[-1, 0, 1].map((offset) => <mesh key={offset} position={[offset * .77, .35, -.3]} scale={[1, .56, 1.16]} castShadow>
+      <dodecahedronGeometry args={[.92, 0]} /><meshStandardMaterial color="#687d9a" flatShading />
+    </mesh>)}
+    {[-.78, 0, .78].map((x) => <mesh key={x} position={[x, 1.05 - Math.abs(x) * .33, .12]} rotation={[0, x, x * -.34]}>
+      <octahedronGeometry args={[.56, 0]} /><meshStandardMaterial color="#9adfff" emissive="#237cb5" emissiveIntensity={.42} roughness={.29} />
+    </mesh>)}
+    {active && <mesh position={[0, 1.3, 1.05]} rotation={[-.2, .22, .1]}>
+      <boxGeometry args={[.55, .41, .13]} /><meshStandardMaterial color="#bcfaff" emissive="#72daf3" emissiveIntensity={.8} />
+    </mesh>}
+  </group>;
+}
+
+export default function MoonEnvironment3D({ active, near, upgrades, onWalkTo }: { active?: BuildingId; near: BuildingId | null; upgrades: number; onWalkTo: (id: BuildingId) => void }) {
   const moon = useMemo(makeMoonTexture, []);
   const earth = useMemo(makeEarthTexture, []);
   const earthGroup = useRef<Group>(null);
@@ -212,14 +247,25 @@ export default function MoonEnvironment3D({ active, near, onWalkTo }: { active?:
     </group>
     {MOON_BUILDINGS.map((building) => <group key={building.id} position={[building.x, 0, building.z]} onClick={(event) => { event.stopPropagation(); onWalkTo(building.id); }}>
       <group scale={BUILDING_SCALE}>
-        {building.id === 'habitat' ? <Habitat open={near === building.id} /> : building.id === 'shelter' ? <Shelter open={near === building.id} /> : <Greenhouse open={near === building.id} />}
+        {building.id === 'habitat' && <Habitat open={near === building.id} />}
+        {building.id === 'shelter' && <Shelter open={near === building.id} />}
+        {building.id === 'greenhouse' && <Greenhouse open={near === building.id} />}
+        {building.id === 'lab' && <ResearchLab open={near === building.id} />}
+        {building.id === 'ridge' && <IceRidge active={active === 'ridge'} />}
+        {building.id === 'horizon' && <group scale={.91}><Habitat open={upgrades >= 3 && near === 'horizon'} /></group>}
         {active === building.id && <Beacon color={building.color} />}
       </group>
       {active === building.id && <><mesh position={[0, .045, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[building.radius + .1, building.radius + .19, 60]} /><meshBasicMaterial color={building.color} transparent opacity={.7} /></mesh></>}
     </group>)}
     {MOON_BUILDINGS.map((building) => <GroundPath key={building.id} {...building.door} />)}
+    {upgrades >= 2 && <group position={[7, .32, .9]}>
+      {[-.75, 0, .75].map((x) => <group key={x} position={[x, .14, .72]}>
+        <mesh><boxGeometry args={[.51, .30, .57]} /><meshStandardMaterial color="#9a765b" /></mesh>
+        <mesh position={[0, .31, 0]}><sphereGeometry args={[.23, 14, 10]} /><meshStandardMaterial color="#a3e274" /></mesh>
+      </group>)}
+    </group>}
     <group position={[-11, .75, 4]}>
-      {[-1, 1].map((x) => <group key={x} position={[x, 0, 0]}>
+      {(upgrades >= 1 ? [-1, 1, 3] : [-1, 1]).map((x) => <group key={x} position={[x === 3 ? 0 : x, 0, x === 3 ? -2.5 : 0]}>
         <mesh position={[0, -.4, 0]}><cylinderGeometry args={[.045, .06, .8, 8]} /><meshStandardMaterial color="#dce5ed" metalness={.6} /></mesh>
         <group rotation={[-.3, 0, 0]}><mesh castShadow><boxGeometry args={[1.7, .1, 2.3]} /><meshStandardMaterial color="#acc0d5" metalness={.6} /></mesh><mesh position={[0, .06, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[1.56, 2.15]} /><meshStandardMaterial color="#244c8a" metalness={.6} roughness={.3} /></mesh>{[-.5, 0, .5].map((z) => <mesh key={z} position={[0, .075, z]}><boxGeometry args={[1.58, .01, .015]} /><meshStandardMaterial color="#789bd4" /></mesh>)}{[-.39, 0, .39].map((z) => <mesh key={z} position={[z, .075, 0]}><boxGeometry args={[.015, .01, 2.15]} /><meshStandardMaterial color="#789bd4" /></mesh>)}</group>
       </group>)}

@@ -5,7 +5,7 @@ import { CatmullRomCurve3, Color, Group, MathUtils, Vector3 } from 'three';
 import type { Point } from './moonWorld';
 import { ANKLE_HEIGHT, createGait, HIP_HEIGHT, resetGait, SHIN_LENGTH, solveKnee, STEP_LENGTH, THIGH_LENGTH, updateGait } from './astronautWalk';
 
-export type ExplorerPose = { position: Point; angle: number; moving: boolean; distance: number; reset: number };
+export type ExplorerPose = { position: Point; angle: number; facing: number; moving: boolean; distance: number; reset: number };
 
 const down = new Vector3(0, -1, 0);
 
@@ -26,7 +26,6 @@ export default function Astronaut3D({ id, color, pose }: { id: string; color: st
   const boots = useRef<(Group | null)[]>([]);
   const arms = useRef<(Group | null)[]>([]);
   const elbows = useRef<(Group | null)[]>([]);
-  const facing = useRef(Math.PI);
   const activeReset = useRef(-1);
   const walkBlend = useRef(0);
   const gait = useMemo(() => ({
@@ -50,17 +49,14 @@ export default function Astronaut3D({ id, color, pose }: { id: string; color: st
   useFrame(({ clock }, rawDelta) => {
     if (!root.current || !torso.current || !head.current || !eyes.current) return;
     const delta = Math.min(rawDelta, .05);
-    const { position, angle, moving, distance, reset } = pose.current;
+    const { position, angle, facing: yaw, moving, distance, reset } = pose.current;
     if (activeReset.current !== reset) {
       activeReset.current = reset;
-      facing.current = angle;
       walkBlend.current = 0;
       resetGait(gait.walk, position.x, position.z, angle);
     }
 
-    const turn = Math.atan2(Math.sin(angle - facing.current), Math.cos(angle - facing.current));
-    facing.current += turn * (1 - Math.exp(-delta * 13));
-    const yaw = facing.current;
+    const turn = Math.atan2(Math.sin(angle - yaw), Math.cos(angle - yaw));
     const sinYaw = Math.sin(yaw);
     const cosYaw = Math.cos(yaw);
     root.current.position.set(position.x, 0, position.z);

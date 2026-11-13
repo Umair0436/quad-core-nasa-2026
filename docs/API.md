@@ -2,7 +2,7 @@
 
 ## Current app scope
 
-The active flow is astronaut selection → briefing → Moon outpost. The outpost starts a mission and sends choices to these endpoints. The first two pages do not need the API.
+These endpoints serve the earlier resource-decision game. The current research delivery missions run in the browser and save progress in session storage.
 
 The frontend uses Vite's `/api` proxy in development. Rails listens on port 3100; Vite listens on 5174. There is no cross-origin browser request in this setup.
 

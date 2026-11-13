@@ -4,7 +4,7 @@ export const HIP_HEIGHT = 1.04;
 export const ANKLE_HEIGHT = .135;
 export const THIGH_LENGTH = .52;
 export const SHIN_LENGTH = .51;
-export const STEP_LENGTH = .78;
+export const STEP_LENGTH = .82;
 const STANCE_WIDTH = .185;
 
 export function createGait() {
