@@ -3,11 +3,36 @@ import type { RefObject } from 'react';
 import './base-systems.css';
 
 const crops = ['lettuce', 'tomato'] as const;
-const turnLimit = 120;
+export type TrainingMission = 'oxygen' | 'food' | 'storm';
+
+export const trainingMissions = ['oxygen', 'food', 'storm'] as const;
+
+function runKey(astronaut: string, mission?: TrainingMission) {
+  return `luna-base-v1-${astronaut}${mission ? `-${mission}` : ''}`;
+}
+
+export function clearTrainingRuns(astronaut: string) {
+  try {
+    for (const mission of trainingMissions) sessionStorage.removeItem(runKey(astronaut, mission));
+  } catch { /* Training can run without browser storage. */ }
+}
+
+const training = {
+  oxygen: { title: 'Restore base oxygen', goal: 'Clean the solar panels and raise base oxygen from 35% to 37%.', hint: 'Keep oxygen power high. Turn down greenhouse lights to save battery power.' },
+  food: { title: 'Grow food for the crew', goal: 'Water the lettuce, grow it to 100%, then harvest it.', hint: 'Keep the greenhouse lights powered through the night. Growth updates at the start of the next sol.' },
+  storm: { title: 'Protect the crew in a solar storm', goal: 'Power the shelter before the storm arrives, then send your report to Earth.', hint: 'The storm arrives after the first turn. Keep shielding at 5 kW and turn down the greenhouse lights to save power for the crew and radio.' },
+};
 type Crop = typeof crops[number];
 type Action = 'wait' | 'clean' | 'water' | 'refill' | 'plant' | 'harvest';
-type Turn = { action: Action; oxygen: number; lighting: number; crop: Crop };
+type Turn = { action: Action; oxygen: number; lighting: number; shielding: number; crop: Crop };
 type State = {
+  goalMet: boolean;
+  failure: string | null;
+  exposure: number;
+  shieldPower: number;
+  radioPower: number;
+  solarStorm: boolean;
+  stormPassed: boolean;
   sol: number;
   hour: number;
   storm: boolean;
@@ -43,17 +68,22 @@ function loadRun(key: string): Save {
 
 const oneDecimal = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 
-export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest }: {
+export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest, mission, onComplete }: {
   astronaut: string;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onClose: () => void;
-  onHarvest: (count: number) => void;
+  mission?: TrainingMission;
+  onComplete?: () => void;
+  onHarvest?: (count: number) => void;
 }) {
-  const storageKey = `luna-base-v1-${astronaut}`;
+  const storageKey = runKey(astronaut, mission);
   const [save, setSave] = useState(() => loadRun(storageKey));
   const lastTurn = save.turns.at(-1);
   const [oxygen, setOxygen] = useState(lastTurn?.oxygen ?? 6);
   const [lighting, setLighting] = useState(lastTurn?.lighting ?? 4);
+  const [shielding, setShielding] = useState(lastTurn?.shielding ?? 0);
+  const [sending, setSending] = useState(false);
+  const replyTimer = useRef<number | undefined>(undefined);
   const [crop, setCrop] = useState<Crop>(lastTurn?.crop ?? 'lettuce');
   const [state, setState] = useState<State>();
   const [busy, setBusy] = useState(true);
@@ -70,7 +100,7 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
       const response = await fetch('/api/base-simulation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(next),
+        body: JSON.stringify({ ...next, mission }),
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
       });
       if (!response.ok) throw new Error('Base systems request failed');
@@ -80,9 +110,9 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
       setSave(next);
       try { sessionStorage.setItem(storageKey, JSON.stringify(next)); }
       catch { /* Keep this run in memory when storage is unavailable. */ }
-      if (action === 'harvest' && state) {
+      if (!mission && action === 'harvest' && state) {
         const collected = (result.harvest[crop] ?? 0) - (state.harvest[crop] ?? 0);
-        if (collected > 0) onHarvest(collected);
+        if (collected > 0) onHarvest?.(collected);
       }
     } catch {
       if (!controller.signal.aborted) setError('Base systems are unavailable. Try again.');
@@ -97,6 +127,7 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
   useEffect(() => {
     void update(save);
     return () => {
+      window.clearTimeout(replyTimer.current);
       pending.current?.abort();
       pending.current = null;
     };
@@ -104,17 +135,30 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
 
   function act(action: Action) {
     if (busy || finished || !state) return;
-    void update({ ...save, turns: [...save.turns, { action, oxygen, lighting, crop }] }, action);
+    void update({ ...save, turns: [...save.turns, { action, oxygen, lighting, shielding, crop }] }, action);
   }
 
-  const finished = !!state && (state.oxygen <= 0 || save.turns.length >= turnLimit);
+  const finished = !!(state?.failure || state?.goalMet);
+  const lesson = mission ? training[mission] : undefined;
+
+  function complete() {
+    if (!state?.goalMet || !onComplete || sending) return;
+    if (mission === 'storm') {
+      setSending(true);
+      replyTimer.current = window.setTimeout(onComplete, 2600);
+    } else {
+      onComplete();
+    }
+  }
   const growth = state?.growth[crop] ?? [];
   const ready = growth.filter((value) => value >= 100).length;
   const occupied = Object.values(state?.growth ?? {}).reduce((count, plants) => count + plants.length, 0);
   const canWater = !!state && state.wateringDueIn > 0 && state.water >= occupied * .5 && occupied > 0;
 
   return <div className="building-info base-systems" aria-busy={busy}>
-    <h2 ref={headingRef} tabIndex={-1}>Base systems</h2>
+    <h2 ref={headingRef} tabIndex={-1}>{lesson?.title ?? 'Base systems'}</h2>
+    {lesson && <><p><strong>{lesson.goal}</strong></p><p>{lesson.hint}</p></>}
+    {mission === 'storm' && <p>This drill is based on a solar particle event recorded by NASA’s Lunar Reconnaissance Orbiter on 28 October 2021. Exposure below uses game points. <a href="https://www.esa.int/articles/giant-solar-eruption-felt-on-earth-moon-and-mars" target="_blank" rel="noreferrer">See the observation</a>.</p>}
     {error && <div className="base-feedback" role="alert">
       <p>{error}</p>
       {!state && <button className="research-secondary" onClick={() => void update(save)}>Try again</button>}
@@ -122,23 +166,32 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
     {!state && busy && <p role="status">Checking the base…</p>}
     {state && <>
       <p className="base-time">Sol {state.sol} · Hour {state.hour}
-        {state.storm ? ' · Storm now' : state.stormSeen ? ' · Storm passed' : ''}</p>
+        {state.solarStorm ? ' · Solar storm incoming. Shield now!' : state.stormPassed ? ' · Solar storm passed' : state.stormSeen ? ' · Panel hazard detected' : ''}</p>
       <dl className="base-readings">
         <div><dt>Base oxygen</dt><dd>{oneDecimal.format(state.oxygen)}%</dd></div>
         <div><dt>Battery</dt><dd>{Math.round(state.battery)}%</dd></div>
         <div><dt>Solar power</dt><dd>{oneDecimal.format(state.solar)} kW</dd></div>
         <div><dt>Panel cleanliness</dt><dd>{Math.round(state.cleanliness)}%</dd></div>
         <div><dt>Greenhouse</dt><dd>{oneDecimal.format(state.temperature)} °C</dd></div>
-        <div><dt>Radiation level</dt><dd>{oneDecimal.format(state.radiation)}</dd></div>
+        {mission === 'storm' ? <>
+          <div><dt>Crew exposure</dt><dd>{oneDecimal.format(state.exposure)} / 15</dd></div>
+          <div><dt>Radio power</dt><dd>{oneDecimal.format(state.radioPower)} kW</dd></div>
+        </> : <div><dt>Radiation level</dt><dd>{oneDecimal.format(state.radiation)}</dd></div>}
       </dl>
       {finished ? <>
-        <p role="status">{state.oxygen <= 0 ? 'The base ran out of oxygen. Try giving more power to oxygen generation.' : 'You completed 20 sols at the base.'}</p>
+        {state.goalMet ? <>
+          <p role="status">{sending ? 'Waiting for Earth’s reply…' : mission === 'storm' ? 'Crew safe. A radio reply from Earth takes about 2.6 seconds.' : 'Objective complete. Your report is ready.'}</p>
+          <button className="outpost-primary" disabled={sending || busy} onClick={complete}>{mission === 'storm' ? 'Send report to Earth' : 'Submit mission report'}</button>
+        </> : <>
+        <p role="status">{state.failure}</p>
         <button className="outpost-primary" disabled={busy} onClick={() => {
           setOxygen(6);
           setLighting(4);
           setCrop('lettuce');
+          setShielding(0);
           void update(newRun());
-        }}>Start a new base run</button>
+        }}>{mission ? 'Retry mission' : 'Start a new base run'}</button>
+        </>}
       </> : <>
         <p>Each action runs the base for 4 lunar hours with your chosen power settings.</p>
         <fieldset disabled={busy}>
@@ -149,12 +202,17 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
           <label htmlFor="base-lighting">Greenhouse lights <strong>{lighting} kW</strong></label>
           <input id="base-lighting" type="range" min="0" max="4" value={lighting} onChange={(event) => setLighting(event.currentTarget.valueAsNumber)} />
           <small>Last hour received {oneDecimal.format(state.lightingPower)} kW</small>
+          {mission === 'storm' && <>
+            <label htmlFor="base-shield">Shelter shielding <strong>{shielding} kW</strong></label>
+            <input id="base-shield" type="range" min="0" max="5" value={shielding} onChange={(event) => setShielding(event.currentTarget.valueAsNumber)} />
+            <small>Last hour received {oneDecimal.format(state.shieldPower)} kW</small>
+          </>}
           <div className="base-actions">
             <button onClick={() => act('wait')}>Advance 4 hours</button>
             <button onClick={() => act('clean')} disabled={state.cleanliness >= 100}>Clean solar panels</button>
           </div>
         </fieldset>
-        <fieldset disabled={busy}>
+        {(!mission || mission === 'food') && <fieldset disabled={busy}>
           <legend>Greenhouse</legend>
           <p>{oneDecimal.format(state.water)} L water · {occupied}/8 plots
             {occupied > 0 && ` · Water within ${state.wateringDueIn}h`}</p>
@@ -167,16 +225,16 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onHarvest 
           {growth.length > 0 && <p>Growth {growth.map((value) => `${Math.floor(value)}%`).join(', ')}</p>}
           <div className="base-actions">
             <button onClick={() => act('plant')} disabled={!state.seeds[crop] || occupied >= 8}>Plant seed</button>
-            <button onClick={() => act('harvest')} disabled={!ready}>Harvest for suit food</button>
+            <button onClick={() => act('harvest')} disabled={!ready}>{mission ? 'Harvest for the crew' : 'Harvest for suit food'}</button>
             <button onClick={() => act('water')} disabled={!canWater}>Water crops</button>
             <button onClick={() => act('refill')} disabled={state.water >= 10}>Refill water tank</button>
           </div>
-        </fieldset>
+        </fieldset>}
       </>}
       <div className="base-feedback" role="status">
         {busy ? <p>Running the base…</p> : state.messages.map((message) => <p key={message}>{message}</p>)}
       </div>
     </>}
-    <button className="research-secondary" onClick={onClose}>Back to exploring</button>
+    <button className="research-secondary" disabled={sending} onClick={onClose}>Back to exploring</button>
   </div>;
 }

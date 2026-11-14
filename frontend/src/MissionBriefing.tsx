@@ -29,11 +29,11 @@ export default function MissionBriefing({ astronaut, headingRef, onStart }: {
       </div>
       <div className="briefing-welcome-copy">
         <h1 id="briefing-title" ref={headingRef} tabIndex={-1}><span>{astronaut.name}</span>, let’s go!</h1>
-        <p>Find clues. Help your Moon base.</p>
+        <p>Run a Moon base. Keep your crew safe.</p>
         <ol className="briefing-days">
           <li>Keep your supplies topped up.</li>
           <li>Pick up a science note.</li>
-          <li>Bring it to the lab for an upgrade.</li>
+          <li>Bring it to the lab and complete its base task.</li>
         </ol>
         <a className="start-game-button" href={`/outpost/${astronaut.id}`} onClick={onStart}>Start mission <span aria-hidden="true">→</span></a>
         <a className="change-astronaut" href="#launch-main">← Pick someone else</a>

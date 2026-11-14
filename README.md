@@ -1,17 +1,21 @@
 # LUNA-01 · Quad Core
 
-A space adventure prototype for kids ages 7–12, created for the NASA Space Apps Challenge.
+A space adventure prototype for kids ages 7–12, created for the [2026 Build a Junior Astronaut Mission Trainer challenge](https://www.spaceappschallenge.org/2026/challenges/junior-astronaut-mission-trainer/).
 
 ## Current game
 
 1. Choose one of four child astronauts, each with a different suit color.
 2. Read a personalized mission briefing and learn what your crew needs.
 3. Walk to a marked site, read the science note, and pick it up.
-4. Return to the Research Lab and select **Submit** to earn an upgrade.
+4. Return to the Research Lab and select **Start base task**. Submit the report after you complete the task to earn the upgrade.
+
+   - Ice Ridge: clean the solar panels and restore crew oxygen.
+   - Greenhouse: balance lighting with life support, water the lettuce, and harvest it for the crew.
+   - Storm Shelter: power the radiation shelter, keep the crew safe and radio Earth. The simulation waits about 2.6 seconds for Earth’s reply.
 
 Walking uses oxygen, water, food, and power. Refill at Habitat or finish a delivery to top up. Deliveries unlock more solar power, extra greenhouse food capacity, and Horizon Base. The game saves each astronaut’s current mission and supplies in browser session storage.
 
-Open **Base systems** from the outpost menu, Habitat, or Greenhouse. Set power for oxygen generation and greenhouse lights, then choose an action to advance four lunar hours. Water, plant, and harvest crops to refill suit food. Each astronaut’s base progress is saved in the browser session.
+After the three missions, open **Base systems** from the outpost menu, Habitat, or Greenhouse for free practice. Set power for oxygen generation and greenhouse lights, then choose an action to advance four lunar hours. Water, plant, and harvest crops to refill suit food. Each astronaut’s base progress is saved in the browser session.
 
 Use WASD, arrow keys, touch controls, or the mission buttons to walk. Press **E** near a location to interact. The camera starts behind the astronaut and keeps its angle as you walk. Drag or use **Q** and **R** to rotate it. Press **C** to center the view behind your astronaut. The illustrated outpost is available when WebGL is unavailable.
 
@@ -85,3 +89,5 @@ The Rails tests cover all eight decision paths, resource bounds, mission complet
 ## Science status
 
 Supply meters use game points. The in-game science panel links to NASA background on Moon ice, growing plants in space, and solar storm shielding.
+
+The Storm Shelter drill uses the [28 October 2021 solar particle event observed by NASA’s Lunar Reconnaissance Orbiter](https://www.esa.int/articles/giant-solar-eruption-felt-on-earth-moon-and-mars) as its scenario. The event timing and radiation exposure points are training mechanics. The [direct Earth–Moon signal delay](https://ntrs.nasa.gov/api/citations/20240007214/downloads/NDE%20Needs%20to%20Enable%20Deep%20Space%20Exploration.pdf) sets the time to receive a radio reply.
