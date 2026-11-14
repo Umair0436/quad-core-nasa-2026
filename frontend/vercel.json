@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
+  "installCommand": "npm ci && cp ../ml/functions.py lib/lunar_model.py",
   "functions": {
     "api/**/*.rb": { "includeFiles": "lib/**" }
   },

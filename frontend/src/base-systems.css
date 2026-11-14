@@ -1,0 +1,16 @@
+.base-time { color: #ffdb98; font-weight: 800; }
+.base-readings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; }
+.base-readings > div { padding: 7px; border: 1px solid var(--game-border); border-radius: 7px; }
+.base-readings dt { color: #d3dfed; font-size: 11px; }
+.base-readings dd { margin: 2px 0 0; color: #f4edff; font-size: 16px; font-weight: 800; }
+.base-systems fieldset { min-inline-size: 0; margin: 0 0 12px; padding: 10px; border: 1px solid var(--game-border); border-radius: 8px; }
+.base-systems legend { padding-inline: 4px; color: #dfcbff; font-weight: 800; }
+.base-systems label { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.base-systems input { width: 100%; min-height: 28px; margin: 0; accent-color: #c2a0ff; }
+.base-systems small { display: block; margin-bottom: 8px; color: #d3dfed; }
+.base-systems select, .base-actions button { min-height: 44px; padding: 6px 8px; border: 1px solid #5b477b; border-radius: 7px; background: #2b2042; color: #f4edff; font: inherit; }
+.base-systems select { width: 100%; margin-block: 4px 8px; }
+.base-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.base-actions button:hover:not(:disabled) { background: #473460; }
+.base-actions button:disabled, .base-systems .outpost-primary:disabled { opacity: .55; cursor: default; }
+.base-feedback { color: #ffdb98; }

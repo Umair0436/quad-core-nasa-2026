@@ -3,10 +3,12 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 api_pid=""
 web_pid=""
+sim_pid=""
 cleanup() {
   trap - EXIT INT TERM
   if [[ -n "$web_pid" ]]; then kill "$web_pid" 2>/dev/null || true; fi
   if [[ -n "$api_pid" ]]; then kill "$api_pid" 2>/dev/null || true; fi
+  if [[ -n "$sim_pid" ]]; then kill "$sim_pid" 2>/dev/null || true; fi
   wait 2>/dev/null || true
 }
 trap cleanup EXIT
@@ -20,11 +22,14 @@ fi
 
 cd "$project_root/backend"
 bundle check >/dev/null || { echo "Install backend dependencies first: cd backend && bundle install"; exit 1; }
+command -v python3 >/dev/null || { echo "Install Python 3.10+ for the base simulator"; exit 1; }
+PYTHONDONTWRITEBYTECODE=1 python3 "$project_root/frontend/api/base-simulation.py" &
+sim_pid=$!
 bundle exec rails server -b 127.0.0.1 -p 3100 &
 api_pid=$!
 cd "$project_root/frontend"
 # Execute Vite directly so the PID belongs to the server, not an npm wrapper.
 node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --strictPort &
 web_pid=$!
-echo "LUNA-01: http://localhost:5174 (Rails API: http://127.0.0.1:3100)"
-wait -n "$api_pid" "$web_pid"
+echo "LUNA-01: http://localhost:5174 (Rails API: 3100, base simulator: 3101)"
+wait -n "$api_pid" "$web_pid" "$sim_pid"

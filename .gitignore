@@ -11,3 +11,6 @@ backend/config/master.key
 .env.*
 !.env.example
 .DS_Store
+
+__pycache__/
+frontend/lib/lunar_model.py
