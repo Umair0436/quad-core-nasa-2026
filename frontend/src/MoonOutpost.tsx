@@ -5,7 +5,7 @@ import type { Astronaut } from './MissionBriefing';
 import type { ExplorerHandle } from './components/ThirdPersonOutpost';
 import { findMoonPath, MOON_BUILDINGS, nearbyBuilding } from './components/moonWorld';
 import type { BuildingId, Point } from './components/moonWorld';
-import { capacity, deliveries, loadResearch, newMission, outOfSupplies, pickUp, refill, saveResearch, submit, supplies, travel } from './researchMission';
+import { capacity, completeMission, deliveries, loadResearch, newMission, outOfSupplies, refill, saveResearch, supplies, travel } from './researchMission';
 import type { ResearchMission } from './researchMission';
 import './outpost.css';
 import './fullscreen-game.css';
@@ -40,7 +40,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   const trainingMission = trainingMissions[mission.delivered];
   const latest = deliveries[mission.delivered - 1];
   const depleted = outOfSupplies(mission);
-  const active = delivery ? (mission.carrying ? 'lab' : delivery.site) : 'horizon';
+  const active = delivery?.site ?? 'horizon';
   const destination = MOON_BUILDINGS.find(({ id }) => id === active)!;
   const location = MOON_BUILDINGS.find(({ id }) => id === opened);
   const paused = Boolean(opened || reward || depleted || showScience || showBase || showTraining);
@@ -82,7 +82,14 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   function inspect(id: BuildingId) {
     if (outOfSupplies(current.current)) return;
     onSound();
-    setOpened(id);
+    if (nearbyBuilding(current.current.position) !== id) return;
+    if (id === deliveries[current.current.delivered]?.site) {
+      commit(current.current);
+      setOpened(null);
+      setShowTraining(true);
+    } else {
+      setOpened(id);
+    }
   }
 
   function goTo(id: BuildingId) {
@@ -119,18 +126,10 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     requestAnimationFrame(() => explorer.current?.focus());
   }
 
-  function collectNote() {
-    if (!opened || opened !== nearby) return;
-    const next = pickUp(current.current, opened);
-    if (next === current.current) return;
-    onSound();
-    commit(next);
-    resume();
-  }
-
-  function submitNote() {
-    if (!showTraining || nearby !== 'lab') return;
-    const next = submit(current.current, 'lab');
+  function finishTraining() {
+    const station = nearbyBuilding(current.current.position);
+    if (!showTraining || !station || station !== delivery?.site) return;
+    const next = completeMission(current.current, station);
     if (next === current.current) return;
     onSound();
     commit(next);
@@ -139,13 +138,14 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     setReward(true);
   }
 
-  function addHarvest(count: number) {
+  function addStoredFood(count: number) {
     const before = current.current;
     const food = Math.min(capacity('food', before.delivered), before.supplies.food + count * 10);
     commit({ ...before, supplies: { ...before.supplies, food } });
   }
 
   function openBaseSystems() {
+    commit(current.current);
     if (menu.current) menu.current.open = false;
     setOpened(null);
     setShowBase(true);
@@ -227,10 +227,14 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
 
     {!paused && <section className="mission-objective research-objective" aria-label="Current mission objective">
       <div role="status">
-        <h2>{!delivery ? 'Visit your new base' : mission.carrying ? 'Take your note to the Research Lab' : `Find the ${delivery.note.toLowerCase()}`}</h2>
-        <p>{!delivery ? 'All three notes are in. Horizon Base is open!' : mission.carrying ? `${delivery.note} is ready. Run the base task at the Research Lab.` : `Pick it up at ${delivery.name}.`}</p>
+        <h2>{!delivery ? 'Visit your new base' : delivery.title}</h2>
+        <p>{!delivery ? 'All three missions are complete. Horizon Base is open!' : delivery.dispatch}</p>
       </div>
-      <button className="outpost-primary" onClick={() => goTo(active)}>{nearby === active ? `Open ${destination.name}` : `Go to ${destination.name}`} <span aria-hidden="true">→</span></button>
+      <button className="outpost-primary" onClick={() => goTo(active)}>{nearby === active ? delivery?.start ?? `Open ${destination.name}` : `Go to ${destination.name}`} <span aria-hidden="true">→</span></button>
+      {!delivery && <div className="base-actions">
+        <button onClick={() => goTo('solar')}>Solar Array</button>
+        <button onClick={() => goTo('greenhouse')}>Greenhouse</button>
+      </div>}
       {delivery && <button className="research-secondary" onClick={() => goTo('habitat')}>
         {nearby === 'habitat' ? 'Open Habitat' : 'Refill at Habitat'}
       </button>}
@@ -241,15 +245,15 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     {paused && <section className="outpost-decision research-panel" aria-label="Moon mission">
       {depleted ? <div className="mission-result">
         <h2 ref={panelHeading} tabIndex={-1}>Out of {depleted.label.toLowerCase()}</h2>
-        <p>Head back to base to refill. You can try this delivery again.</p>
+        <p>Head back to base to refill. You can try this mission again.</p>
         <button className="outpost-primary" onClick={returnToBase}>Back to base <span aria-hidden="true">→</span></button>
       </div> : reward && latest ? <div className="mission-result">
         <h2 ref={panelHeading} tabIndex={-1}>{latest.upgrade}!</h2>
         <p>{latest.benefit} Your supplies are topped up.</p>
         <button className="outpost-primary" onClick={resume}>{delivery ? 'Next mission' : 'Explore Horizon Base'} <span aria-hidden="true">→</span></button>
-      </div> : showTraining && trainingMission ? <BaseSystems astronaut={astronaut.id} mission={trainingMission} headingRef={panelHeading}
-        onClose={() => { setShowTraining(false); setOpened('lab'); }} onComplete={submitNote} />
-      : showBase ? <BaseSystems astronaut={astronaut.id} headingRef={panelHeading} onClose={resume} onHarvest={addHarvest} /> : showScience ? <div className="building-info">
+      </div> : showTraining && trainingMission && delivery ? <BaseSystems astronaut={astronaut.id} mission={trainingMission} location={nearbyBuilding(mission.position)} headingRef={panelHeading}
+        onClose={resume} onComplete={finishTraining} />
+      : showBase ? <BaseSystems astronaut={astronaut.id} location={nearbyBuilding(mission.position)} headingRef={panelHeading} onClose={resume} onStore={addStoredFood} /> : showScience ? <div className="building-info">
         <h2 ref={panelHeading} tabIndex={-1}>Moon science</h2>
         <p>The supplies use game points. Learn about <a href="https://www.nasa.gov/reference/moonbase-environment/" target="_blank" rel="noreferrer">Moon ice</a>, <a href="https://www.nasa.gov/exploration-research-and-technology/growing-plants-in-space/" target="_blank" rel="noreferrer">plants in space</a> and <a href="https://science.nasa.gov/science-research/heliophysics/how-nasa-will-protect-astronauts-from-space-radiation-at-the-moon/" target="_blank" rel="noreferrer">solar storm shelter</a> from NASA.</p>
         <button className="outpost-primary" onClick={resume}>Back to exploring</button>
@@ -258,16 +262,10 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
         {opened === 'habitat' ? <>
           <p>Fill up your oxygen, water, food and power here.</p>
           <button className="outpost-primary" onClick={restock}>Refill supplies</button>
-        </> : opened === 'lab' ? mission.carrying ? <>
-          <p>Your {delivery?.note.toLowerCase()} is ready. Complete the base task to turn in your report.</p>
-          <button className="outpost-primary" onClick={() => { setOpened(null); setShowTraining(true); }}>Start base task</button>
-        </> : <p>{delivery ? 'Bring a science note here to earn an upgrade.' : 'All three notes are in the lab.'}</p>
-        : opened === delivery?.site && !mission.carrying ? <>
-          <h3>{delivery.note}</h3>
-          <p>{delivery.finding}</p>
-          <button className="outpost-primary" onClick={collectNote}>Pick up note</button>
-        </> : <p>{opened === 'horizon' ? delivery ? 'Deliver all three notes to open this base.' : 'Welcome to your new Moon base!' : mission.carrying ? 'Your note is in your pack. Take it to the lab.' : 'Follow your mission marker to the next note.'}</p>}
-        {!delivery && (opened === 'habitat' || opened === 'greenhouse') && <button className="research-secondary" onClick={openBaseSystems}>Open base systems</button>}
+        </> : <p>{opened === 'horizon'
+          ? delivery ? 'Complete all three missions to open this base.' : 'Welcome to your new Moon base!'
+          : delivery ? `The crew needs you at ${delivery.name}.` : 'All missions complete. Explore the outpost!'}</p>}
+        {!delivery && (opened === 'solar' || opened === 'greenhouse') && <button className="research-secondary" onClick={openBaseSystems}>Open base systems</button>}
         <button className="research-secondary" onClick={resume}>Back to exploring</button>
       </div>}
     </section>}

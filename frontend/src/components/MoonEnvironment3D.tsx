@@ -204,6 +204,15 @@ function IceRidge({ active }: { active: boolean }) {
   </group>;
 }
 
+function SolarArray({ upgraded }: { upgraded: boolean }) {
+  return <group position={[0, .75, 0]}>
+      {(upgraded ? [-1, 1, 3] : [-1, 1]).map((x) => <group key={x} position={[x === 3 ? 0 : x, 0, x === 3 ? -2.5 : 0]}>
+        <mesh position={[0, -.4, 0]}><cylinderGeometry args={[.045, .06, .8, 8]} /><meshStandardMaterial color="#dce5ed" metalness={.6} /></mesh>
+        <group rotation={[-.3, 0, 0]}><mesh castShadow><boxGeometry args={[1.7, .1, 2.3]} /><meshStandardMaterial color="#acc0d5" metalness={.6} /></mesh><mesh position={[0, .06, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[1.56, 2.15]} /><meshStandardMaterial color="#244c8a" metalness={.6} roughness={.3} /></mesh>{[-.5, 0, .5].map((z) => <mesh key={z} position={[0, .075, z]}><boxGeometry args={[1.58, .01, .015]} /><meshStandardMaterial color="#789bd4" /></mesh>)}{[-.39, 0, .39].map((z) => <mesh key={z} position={[z, .075, 0]}><boxGeometry args={[.015, .01, 2.15]} /><meshStandardMaterial color="#789bd4" /></mesh>)}</group>
+      </group>)}
+    </group>;
+}
+
 export default function MoonEnvironment3D({ active, near, upgrades, onWalkTo }: { active?: BuildingId; near: BuildingId | null; upgrades: number; onWalkTo: (id: BuildingId) => void }) {
   const moon = useMemo(makeMoonTexture, []);
   const earth = useMemo(makeEarthTexture, []);
@@ -250,6 +259,7 @@ export default function MoonEnvironment3D({ active, near, upgrades, onWalkTo }: 
         {building.id === 'habitat' && <Habitat open={near === building.id} />}
         {building.id === 'shelter' && <Shelter open={near === building.id} />}
         {building.id === 'greenhouse' && <Greenhouse open={near === building.id} />}
+        {building.id === 'solar' && <SolarArray upgraded={upgrades >= 1} />}
         {building.id === 'lab' && <ResearchLab open={near === building.id} />}
         {building.id === 'ridge' && <IceRidge active={active === 'ridge'} />}
         {building.id === 'horizon' && <group scale={.91}><Habitat open={upgrades >= 3 && near === 'horizon'} /></group>}
@@ -258,18 +268,12 @@ export default function MoonEnvironment3D({ active, near, upgrades, onWalkTo }: 
       {active === building.id && <><mesh position={[0, .045, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[building.radius + .1, building.radius + .19, 60]} /><meshBasicMaterial color={building.color} transparent opacity={.7} /></mesh></>}
     </group>)}
     {MOON_BUILDINGS.map((building) => <GroundPath key={building.id} {...building.door} />)}
-    {upgrades >= 2 && <group position={[7, .32, .9]}>
+    {upgrades >= 2 && <group position={[15, .32, 7.2]}>
       {[-.75, 0, .75].map((x) => <group key={x} position={[x, .14, .72]}>
         <mesh><boxGeometry args={[.51, .30, .57]} /><meshStandardMaterial color="#9a765b" /></mesh>
         <mesh position={[0, .31, 0]}><sphereGeometry args={[.23, 14, 10]} /><meshStandardMaterial color="#a3e274" /></mesh>
       </group>)}
     </group>}
-    <group position={[-11, .75, 4]}>
-      {(upgrades >= 1 ? [-1, 1, 3] : [-1, 1]).map((x) => <group key={x} position={[x === 3 ? 0 : x, 0, x === 3 ? -2.5 : 0]}>
-        <mesh position={[0, -.4, 0]}><cylinderGeometry args={[.045, .06, .8, 8]} /><meshStandardMaterial color="#dce5ed" metalness={.6} /></mesh>
-        <group rotation={[-.3, 0, 0]}><mesh castShadow><boxGeometry args={[1.7, .1, 2.3]} /><meshStandardMaterial color="#acc0d5" metalness={.6} /></mesh><mesh position={[0, .06, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[1.56, 2.15]} /><meshStandardMaterial color="#244c8a" metalness={.6} roughness={.3} /></mesh>{[-.5, 0, .5].map((z) => <mesh key={z} position={[0, .075, z]}><boxGeometry args={[1.58, .01, .015]} /><meshStandardMaterial color="#789bd4" /></mesh>)}{[-.39, 0, .39].map((z) => <mesh key={z} position={[z, .075, 0]}><boxGeometry args={[.015, .01, 2.15]} /><meshStandardMaterial color="#789bd4" /></mesh>)}</group>
-      </group>)}
-    </group>
     <group position={[-12, .72, 10]} rotation={[0, .5, 0]}>
       <mesh castShadow><boxGeometry args={[1.6, .6, 2.1]} /><meshStandardMaterial color="#dde5ec" metalness={.35} /></mesh>
       <mesh position={[0, .55, -.25]} castShadow><boxGeometry args={[1.15, .65, 1.1]} /><meshStandardMaterial color="#ebedf3" /></mesh>

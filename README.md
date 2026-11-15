@@ -5,17 +5,16 @@ A space adventure prototype for kids ages 7–12, created for the [2026 Build a 
 ## Current game
 
 1. Choose one of four child astronauts, each with a different suit color.
-2. Read a personalized mission briefing and learn what your crew needs.
-3. Walk to a marked site, read the science note, and pick it up.
-4. Return to the Research Lab and select **Start base task**. Submit the report after you complete the task to earn the upgrade.
+2. Follow Mission Control’s emergency call to its station.
+3. Complete the station’s task to unlock the next mission.
 
-   - Ice Ridge: clean the solar panels and restore crew oxygen.
-   - Greenhouse: balance lighting with life support, water the lettuce, and harvest it for the crew.
-   - Storm Shelter: power the radiation shelter, keep the crew safe and radio Earth. The simulation waits about 2.6 seconds for Earth’s reply.
+   - Solar Array: clear the solar panels, then choose between 6 kW for oxygen or 2 kW while keeping the grow lights on. Compare the crew’s oxygen after each turn.
+   - Greenhouse: water the crop, balance grow lights with life support, and harvest food and move it into storage.
+   - Storm Shelter: decide what to power before the storm hits, protect the crew, and radio Earth for a reply.
 
-Walking uses oxygen, water, food, and power. Refill at Habitat or finish a delivery to top up. Deliveries unlock more solar power, extra greenhouse food capacity, and Horizon Base. The game saves each astronaut’s current mission and supplies in browser session storage.
+Walking uses suit oxygen, water, food, and power. Refill at Habitat or finish a mission to top up. Completing the three missions unlocks Horizon Base. Progress is saved per astronaut in the browser session.
 
-After the three missions, open **Base systems** from the outpost menu, Habitat, or Greenhouse for free practice. Set power for oxygen generation and greenhouse lights, then choose an action to advance four lunar hours. Water, plant, and harvest crops to refill suit food. Each astronaut’s base progress is saved in the browser session.
+After the three missions, open **Base systems** for free practice. Walk to the Solar Array to clean panels, or to the Greenhouse to plant, irrigate, harvest and store crops.
 
 Use WASD, arrow keys, touch controls, or the mission buttons to walk. Press **E** near a location to interact. The camera starts behind the astronaut and keeps its angle as you walk. Drag or use **Q** and **R** to rotate it. Press **C** to center the view behind your astronaut. The illustrated outpost is available when WebGL is unavailable.
 

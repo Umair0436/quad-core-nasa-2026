@@ -1,8 +1,4 @@
 .base-time { color: #ffdb98; font-weight: 800; }
-.base-readings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; }
-.base-readings > div { padding: 7px; border: 1px solid var(--game-border); border-radius: 7px; }
-.base-readings dt { color: #d3dfed; font-size: 11px; }
-.base-readings dd { margin: 2px 0 0; color: #f4edff; font-size: 16px; font-weight: 800; }
 .base-systems fieldset { min-inline-size: 0; margin: 0 0 12px; padding: 10px; border: 1px solid var(--game-border); border-radius: 8px; }
 .base-systems legend { padding-inline: 4px; color: #dfcbff; font-weight: 800; }
 .base-systems label { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
@@ -14,3 +10,41 @@
 .base-actions button:hover:not(:disabled) { background: #473460; }
 .base-actions button:disabled, .base-systems .outpost-primary:disabled { opacity: .55; cursor: default; }
 .base-feedback { color: #ffdb98; }
+
+.mission-choices { display: grid; gap: 8px; margin-bottom: 8px; }
+.mission-choices button { display: grid; gap: 4px; min-height: 52px; padding: 10px 12px; border: 1px solid #6e5695; border-radius: 8px; background: #30234b; color: #f4edff; font: inherit; text-align: left; }
+.mission-choices button:hover:not(:disabled) { background: #473460; }
+.mission-choices button:disabled { opacity: .65; }
+.mission-choices span { color: #e0d6f0; font-size: 13px; line-height: 1.35; }
+.crop-growth { display: grid; gap: 4px; margin-bottom: 10px; text-transform: capitalize; }
+.crop-growth progress { width: 100%; accent-color: #b7d990; }
+
+.game-screen .base-systems .storm-warning { padding: 9px 12px; border: 1px solid #f3a76c; border-radius: 8px; background: #552a2d; color: #ffe1cb; font-weight: 850; }
+.base-systems details { margin-bottom: 12px; }
+
+.station-readout { margin-bottom: 10px; padding: 10px 12px; border: 1px solid #68558a; border-radius: 10px; background: #1e1835; }
+.station-meter label { color: #f5ecff; font-weight: 800; }
+.station-meter progress { width: 100%; height: 12px; accent-color: #8ae2d3; }
+.exposure-meter progress { accent-color: #ff9b86; }
+.game-screen .station-readout p { margin: 4px 0 0; font-size: 13px; }
+.game-screen .station-goal { color: #dfcbff; font-weight: 750; }
+.game-screen .station-next { margin-bottom: 6px; color: #b7d990; font-weight: 850; }
+.quick-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; }
+.quick-choices button:first-child { border-color: #8ae2d3; background: #193d45; }
+.quick-choices button:hover:first-child:not(:disabled) { background: #24535a; }
+.base-systems fieldset:disabled button { opacity: .65; }
+@media (prefers-reduced-motion: no-preference) {
+  .turn-result { animation: turn-result .28s ease-out; }
+  @keyframes turn-result { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+}
+.base-systems button[data-next="true"]:not(:disabled) { border-color: #b7d990; background: #29433c; }
+
+.oxygen-recovery { margin-bottom: 10px; padding: 10px; border: 1px solid #f3a76c; border-radius: 8px; background: #552a2d; color: #ffe1cb; }
+.game-screen .oxygen-recovery p { margin: 0 0 8px; font-weight: 800; }
+
+.food-guide { display: grid; gap: 10px; }
+.food-guide-plant { display: grid; min-height: 70px; place-items: center; border: 1px solid #59785a; border-radius: 10px; background: #20372f; font-size: 42px; }
+.food-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.food-steps li { border-radius: 5px; padding: 5px 2px; background: #282038; color: #e0d6f0; font-size: 12px; text-align: center; }
+.food-steps li[aria-current="step"] { color: #18291e; background: #b7d990; font-weight: 850; }
+.food-steps span { margin-right: 3px; }

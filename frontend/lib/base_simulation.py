@@ -19,7 +19,7 @@ REQUIREMENTS = {
     "Communication": 2.0,
 }
 CROPS = ("lettuce", "tomato")
-ACTIONS = ("wait", "clean", "water", "refill", "plant", "harvest")
+ACTIONS = ("wait", "clean", "water", "refill", "plant", "harvest", "store")
 MISSIONS = ("oxygen", "food", "storm")
 MAX_TURNS = 120
 HOURS_PER_TURN = 4
@@ -44,7 +44,7 @@ def validate_request(payload):
             raise ValueError("Invalid power allocation.")
         if type(turn.get("shielding", 0)) is not int or not 0 <= turn.get("shielding", 0) <= 5:
             raise ValueError("Invalid shielding power.")
-        if turn["action"] in ("plant", "harvest") and turn.get("crop") not in CROPS:
+        if turn["action"] in ("plant", "harvest", "store") and turn.get("crop") not in CROPS:
             raise ValueError("Unknown crop.")
     return seed, mission, turns
 
@@ -73,6 +73,7 @@ def simulate(payload):
     elif mission == "food":
         clock.update(16 * clock.sol_duration_seconds / clock.LUNAR_HOURS_PER_SOL)
         growth = {"lettuce": [97.0], "tomato": [82.0]}
+    stored_crops = {}
     exposure = 0.0
     simulated_hours = 0
     actions = {}
@@ -130,7 +131,7 @@ def simulate(payload):
         if mission == "oxygen":
             return round(oxygen, 1) >= 37 and cleanliness == 100
         if mission == "food":
-            return sum(inventory["harvested_crops"].values()) >= 1
+            return sum(stored_crops.values()) >= 1
         if mission == "storm":
             return simulated_hours >= 8 and state["power"]["allocations"]["Communication"]["allocated_kw"] >= 1
         return False
@@ -156,6 +157,16 @@ def simulate(payload):
                 plants.hours_since_last_watering = 0
                 plants.watered_liters_per_plant = 0
         actions = {"refill": "Water tank refilled."} if action == "refill" else {}
+        if action == "store":
+            crop = turn["crop"]
+            quantity = inventory["harvested_crops"].pop(crop, 0)
+            if quantity:
+                stored_crops[crop] = stored_crops.get(crop, 0) + quantity
+                actions["store"] = f"Stored {quantity} {crop} for the crew."
+            else:
+                actions["store"] = "Harvest a crop before storing it."
+            # Moving food into storage does not advance the clock.
+            continue
         storm_seen = False
         plants_lost = False
         for hour in range(HOURS_PER_TURN):
@@ -194,6 +205,8 @@ def simulate(payload):
         "water": inventory["water_liters"],
         "seeds": inventory["seeds"],
         "harvest": inventory["harvested_crops"],
+        "stored": stored_crops,
+        "watered": plants.watered_liters_per_plant > 0,
         "wateringDueIn": max(0, 24 - plants.hours_since_last_watering),
         "messages": list(actions.values()),
     }

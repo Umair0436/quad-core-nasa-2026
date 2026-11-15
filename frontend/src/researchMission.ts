@@ -10,29 +10,28 @@ export const supplies = [
 
 export const deliveries = [
   {
-    site: 'ridge', name: 'Ice Ridge', note: 'Ice scan',
-    finding: 'Ice can stay frozen in Moon craters that sunlight never reaches.',
+    site: 'solar', name: 'Solar Array', title: 'Oxygen emergency', dispatch: 'The crew is running low on air. Reach the Solar Array and bring the oxygen generator back online.', start: 'Restore crew oxygen',
+    finding: 'Solar panels turn sunlight into electricity, and batteries store some of it for later.',
     upgrade: 'Extra solar panels', benefit: 'Your battery now uses less power on walks.',
   },
   {
-    site: 'greenhouse', name: 'Greenhouse', note: 'Plant report',
+    site: 'greenhouse', name: 'Greenhouse', title: 'Dinner before sunrise', dispatch: 'The crew needs food. Keep the lettuce alive through the night and harvest it.', start: 'Save the crop',
     finding: 'Plants need light, water and air to grow in a Moon greenhouse.',
     upgrade: 'Bigger greenhouse', benefit: 'You can now carry 125 food instead of 100.',
   },
   {
-    site: 'shelter', name: 'Storm Shelter', note: 'Storm reading',
+    site: 'shelter', name: 'Storm Shelter', title: 'Solar storm inbound', dispatch: 'Get to the shelter, protect the crew and radio Earth when the storm passes.', start: 'Prepare the shelter',
     finding: 'Thick walls can help protect astronauts during a solar storm.',
     upgrade: 'New base unlocked', benefit: 'You can now visit Horizon Base.',
   },
 ] as const satisfies ReadonlyArray<{
-  site: BuildingId; name: string; note: string; finding: string; upgrade: string; benefit: string;
+  site: BuildingId; name: string; title: string; dispatch: string; start: string; finding: string; upgrade: string; benefit: string;
 }>;
 
 export type SupplyId = typeof supplies[number]['id'];
 export type Supplies = Record<SupplyId, number>;
 export type ResearchMission = {
   delivered: number;
-  carrying: boolean;
   supplies: Supplies;
   position: Point;
 };
@@ -46,7 +45,7 @@ function fullSupplies(delivered: number): Supplies {
 }
 
 export function newMission(delivered = 0): ResearchMission {
-  return { delivered, carrying: false, supplies: fullSupplies(delivered), position: { ...SPAWN } };
+  return { delivered, supplies: fullSupplies(delivered), position: { ...SPAWN } };
 }
 
 export function outOfSupplies(mission: ResearchMission) {
@@ -68,15 +67,10 @@ export function refill(mission: ResearchMission): ResearchMission {
   return { ...mission, supplies: fullSupplies(mission.delivered) };
 }
 
-export function pickUp(mission: ResearchMission, location: BuildingId): ResearchMission {
-  if (mission.carrying || deliveries[mission.delivered]?.site !== location || outOfSupplies(mission)) return mission;
-  return { ...mission, carrying: true };
-}
-
-export function submit(mission: ResearchMission, location: BuildingId): ResearchMission {
-  if (location !== 'lab' || !mission.carrying || mission.delivered >= deliveries.length || outOfSupplies(mission)) return mission;
+export function completeMission(mission: ResearchMission, location: BuildingId): ResearchMission {
+  if (deliveries[mission.delivered]?.site !== location || outOfSupplies(mission)) return mission;
   const delivered = mission.delivered + 1;
-  return { ...mission, delivered, carrying: false, supplies: fullSupplies(delivered) };
+  return { ...mission, delivered, supplies: fullSupplies(delivered) };
 }
 
 function storageKey(astronaut: string) {
@@ -87,10 +81,9 @@ export function loadResearch(astronaut: string): ResearchMission {
   try {
     const saved: ResearchMission = JSON.parse(sessionStorage.getItem(storageKey(astronaut)) ?? 'null');
     if (saved && Number.isInteger(saved.delivered) && saved.delivered >= 0 && saved.delivered <= deliveries.length &&
-        typeof saved.carrying === 'boolean' && !(saved.carrying && saved.delivered === deliveries.length) &&
-        saved.position && canStand(saved.position) && supplies.every(({ id }) =>
+        supplies.every(({ id }) =>
           Number.isFinite(saved.supplies?.[id]) && saved.supplies[id] >= 0 && saved.supplies[id] <= capacity(id, saved.delivered))) {
-      return saved;
+      return { ...saved, position: saved.position && canStand(saved.position) ? saved.position : { ...SPAWN } };
     }
   } catch { /* Storage can be unavailable. */ }
   return newMission();

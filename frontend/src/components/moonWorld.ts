@@ -1,17 +1,18 @@
 export type Point = { x: number; z: number };
-export type BuildingId = 'habitat' | 'shelter' | 'greenhouse' | 'ridge' | 'lab' | 'horizon';
+export type BuildingId = 'habitat' | 'shelter' | 'greenhouse' | 'ridge' | 'solar' | 'lab' | 'horizon';
 export const SPAWN: Point = { x: 0, z: 8 };
-export const WALK_SPEED = 2.95;
-export const WORLD_EDGE = 23;
+export const WALK_SPEED = 3.3;
+export const WORLD_EDGE = 28;
 export const PLAYER_RADIUS = 0.42;
 export const BUILDING_SCALE = 1.28;
 export const MOON_BUILDINGS = [
-  { id: 'habitat' as const, name: 'Habitat', x: -6.5, z: -5, radius: 3.05, height: 4.7, door: { x: -6.5, z: -0.65 }, color: '#8ae2d3' },
-  { id: 'shelter' as const, name: 'Storm shelter', x: 6.5, z: -11, radius: 3.25, height: 3.15, door: { x: 6.5, z: -6.5 }, color: '#ffd08a' },
-  { id: 'lab' as const, name: 'Research Lab', x: 0, z: -13.5, radius: 2.15, height: 3.35, door: { x: 0, z: -10.25 }, color: '#d4b5ff' },
-  { id: 'ridge' as const, name: 'Ice Ridge', x: -15, z: -11, radius: 1.7, height: 2.15, door: { x: -15, z: -8 }, color: '#9fdcff' },
-  { id: 'horizon' as const, name: 'Horizon Base', x: 16, z: -9, radius: 2.65, height: 4.3, door: { x: 16, z: -5.25 }, color: '#ffd08a' },
-  { id: 'greenhouse' as const, name: 'Greenhouse', x: 7, z: .7, radius: 3.05, height: 3.1, door: { x: 7, z: 5 }, color: '#b7d990' },
+  { id: 'habitat' as const, name: 'Habitat', x: -7, z: -6, radius: 3.05, height: 4.7, door: { x: -7, z: -1.65 }, color: '#8ae2d3' },
+  { id: 'shelter' as const, name: 'Storm shelter', x: 11, z: -17, radius: 3.25, height: 3.15, door: { x: 11, z: -12.5 }, color: '#ffd08a' },
+  { id: 'solar' as const, name: 'Solar Array', x: -18, z: 3, radius: 2.35, height: 2.1, door: { x: -18, z: 6.1 }, color: '#8ec5ff' },
+  { id: 'lab' as const, name: 'Research Lab', x: -1, z: -18, radius: 2.15, height: 3.35, door: { x: -1, z: -14.75 }, color: '#d4b5ff' },
+  { id: 'ridge' as const, name: 'Ice Ridge', x: -19, z: -15, radius: 1.7, height: 2.15, door: { x: -19, z: -12 }, color: '#9fdcff' },
+  { id: 'horizon' as const, name: 'Horizon Base', x: 22, z: -7, radius: 2.65, height: 4.3, door: { x: 22, z: -3.25 }, color: '#ffd08a' },
+  { id: 'greenhouse' as const, name: 'Greenhouse', x: 15, z: 7, radius: 3.05, height: 3.1, door: { x: 15, z: 11.3 }, color: '#b7d990' },
 ].map(({ door, ...building }) => ({
   ...building,
   radius: building.radius * BUILDING_SCALE,
@@ -20,7 +21,6 @@ export const MOON_BUILDINGS = [
 }));
 const obstacles = [
   ...MOON_BUILDINGS,
-  { x: -11, z: 4, radius: 2.1 },
   { x: -12, z: 10, radius: 1.55 },
 ];
 
