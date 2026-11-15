@@ -5,7 +5,7 @@ import type { Astronaut } from './MissionBriefing';
 import type { ExplorerHandle } from './components/ThirdPersonOutpost';
 import { findMoonPath, MOON_BUILDINGS, nearbyBuilding } from './components/moonWorld';
 import type { BuildingId, Point } from './components/moonWorld';
-import { capacity, completeMission, deliveries, loadResearch, newMission, outOfSupplies, refill, saveResearch, supplies, travel } from './researchMission';
+import { capacity, completeMission, deliveries, loadResearch, newMission, outOfSupplies, refill, saveResearch, travel } from './researchMission';
 import type { ResearchMission } from './researchMission';
 import './outpost.css';
 import './fullscreen-game.css';
@@ -15,6 +15,12 @@ export function preloadOutpostScene() {
 }
 
 const ThirdPersonOutpost = lazy(preloadOutpostScene);
+const stationBriefs = {
+  solar: 'Clean the panels and bring back the crew’s air.',
+  greenhouse: 'Grow and store food for the crew.',
+  shelter: 'Shield the crew, then radio Earth.',
+  horizon: 'All missions complete. Explore your new base!',
+} as const;
 const confetti = ['#ffd08a', '#c2a0ff', '#8ae2d3', '#ff9b86'];
 
 export default function MoonOutpost({ astronaut, headingRef, onSound }: {
@@ -43,7 +49,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   const latest = deliveries[mission.delivered - 1];
   const depleted = outOfSupplies(mission);
   const active = delivery?.site ?? 'horizon';
-  const destination = MOON_BUILDINGS.find(({ id }) => id === active)!;
+  const destination = MOON_BUILDINGS.find(({ id }) => id === active);
   const location = MOON_BUILDINGS.find(({ id }) => id === opened);
   const paused = Boolean(opened || reward || showBadges || depleted || showScience || showBase || showTraining);
 
@@ -94,15 +100,12 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     }
   }
 
-  function goTo(id: BuildingId) {
-    const stage = explorer.current;
-    if (!stage || outOfSupplies(current.current)) return;
+  function visitOnMap(id: BuildingId) {
+    if (paused || outOfSupplies(current.current)) return;
     if (nearby === id) {
       inspect(id);
       return;
     }
-    if (stage.walkTo(id)) return;
-
     // The illustrated map uses the same route length and supply costs.
     const building = MOON_BUILDINGS.find((item) => item.id === id)!;
     const before = current.current;
@@ -208,41 +211,19 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
       </details>
     </header>
 
-    <section className="outpost-hud" aria-label="Crew supplies">
-      {supplies.map(({ id, label, color }) => {
-        const amount = Math.ceil(mission.supplies[id]);
-        const max = capacity(id, mission.delivered);
-        return <div className="supply-meter" key={id} style={{ '--meter-color': amount <= 25 ? '#ff9b86' : color } as CSSProperties}>
-          <div><span>{label}</span><strong>{amount}</strong></div>
-          <div className="supply-track" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={amount}>
-            <span style={{ width: `${amount / max * 100}%` }} />
-          </div>
-        </div>;
-      })}
-    </section>
+    {!paused && destination && <section className="outpost-radio-brief" aria-label="Mission briefing" aria-live="polite">
+      <strong>{nearby === active ? `At ${destination.name}` : `Head to ${destination.name}`}</strong>
+      <p>{stationBriefs[active]}</p>
+      <small>{nearby === active ? 'Select the station to start.' : 'Look for the highlighted station.'}</small>
+    </section>}
 
     <section className="moon-map-panel" aria-label="Explore the Moon outpost">
       <Suspense fallback={<div className="explorer-preparing" role="status">Getting your Moon base ready…</div>}>
         <ThirdPersonOutpost key={sceneKey} ref={explorer} astronautId={astronaut.id} suitColor={astronaut.color}
           start={mission.position} upgrades={mission.delivered} active={paused ? undefined : active} enabled={!paused}
-          onInteract={inspect} onNearChange={setNearby} onTravel={onTravel} />
+          onInteract={inspect} onNearChange={setNearby} onTravel={onTravel} onMapVisit={visitOnMap} />
       </Suspense>
     </section>
-
-    {!paused && <section className="mission-objective research-objective" aria-label="Current mission objective">
-      <div role="status">
-        <h2>{!delivery ? 'Visit your new base' : delivery.title}</h2>
-        <p>{!delivery ? 'All three missions are complete. Horizon Base is open!' : delivery.dispatch}</p>
-      </div>
-      <button className="outpost-primary" onClick={() => goTo(active)}>{nearby === active ? delivery?.start ?? `Open ${destination.name}` : `Go to ${destination.name}`} <span aria-hidden="true">→</span></button>
-      {!delivery && <div className="base-actions">
-        <button onClick={() => goTo('solar')}>Solar Array</button>
-        <button onClick={() => goTo('greenhouse')}>Greenhouse</button>
-      </div>}
-      {delivery && <button className="research-secondary" onClick={() => goTo('habitat')}>
-        {nearby === 'habitat' ? 'Open Habitat' : 'Refill at Habitat'}
-      </button>}
-    </section>}
 
     {fullscreenNotice && <button className="fullscreen-note" onClick={() => setFullscreenNotice(false)}>Fullscreen is unavailable here. Close</button>}
 

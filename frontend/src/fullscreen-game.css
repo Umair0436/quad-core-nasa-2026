@@ -142,3 +142,25 @@
 .moon-badge-list li[data-earned="true"] { border-color: #e5ba64; color: #ffe1a4; background: #ffffff0b; }
 .moon-badge-list li > span { font-size: 24px; width: 30px; text-align: center; }
 .moon-badge-list small { display: block; margin-top: 2px; color: #d3c9e4; }
+
+.explorer-map-stations {
+  position: absolute; inset: auto 12px 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+}
+.explorer-map-stations button {
+  min-height: 44px; padding: 8px 16px; border: 1px solid #5b477b; border-radius: 8px;
+  background: #221836; color: #f4edff; font: inherit; font-weight: 800;
+}
+.explorer-map-stations button[data-active="true"] { border-color: #fff0c6; background: #ffe2a1; color: #30223a; }
+
+.outpost-radio-brief {
+  position: absolute; z-index: 10; top: calc(var(--launch-header-height) + 8px); left: 50%;
+  transform: translateX(-50%); width: min(360px, calc(100% - 24px)); padding: 8px 14px;
+  border: 1px solid #b3a4d97a; border-radius: 10px; background: var(--game-panel);
+  color: #f6f3ff; text-align: center; pointer-events: none;
+}
+.outpost-radio-brief strong { color: #ffe2a1; font-size: 17px; }
+.outpost-radio-brief p { margin: 2px 0 0; font-size: 14px; }
+.outpost-radio-brief small { display: block; margin-top: 2px; color: #dbd0f1; font-size: 12px; }
+@media (max-width: 900px) {
+  .outpost-radio-brief { top: calc(var(--launch-header-height) + 58px); }
+}

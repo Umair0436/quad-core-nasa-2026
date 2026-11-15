@@ -37,7 +37,7 @@ function positionCamera(desired: Vector3, position: Point, yaw: number, pitch: n
   desired.set(position.x + dx * arm, height, position.z + dz * arm);
 }
 
-type Props = { astronautId: string; suitColor: string; active?: BuildingId; upgrades: number; start: Point; enabled: boolean; pauseLabel?: string; onInteract: (id: BuildingId) => void; onNearChange: (id: BuildingId | null) => void; onTravel: (distance: number, point: Point) => void };
+type Props = { astronautId: string; suitColor: string; active?: BuildingId; upgrades: number; start: Point; enabled: boolean; pauseLabel?: string; onInteract: (id: BuildingId) => void; onNearChange: (id: BuildingId | null) => void; onTravel: (distance: number, point: Point) => void; onMapVisit: (id: BuildingId) => void };
 
 function ExplorerController({ pose, input, command, orbit, enabled, root, labels, onNearby, onArrive, onCancelGuide, onTravel }: {
   pose: RefObject<ExplorerPose>; input: RefObject<Input>; command: RefObject<Command>;
@@ -135,7 +135,7 @@ class RendererBoundary extends Component<{ children: ReactNode; onFailure: () =>
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPersonOutpost({ astronautId, suitColor, active, upgrades, start, enabled, pauseLabel = 'Choose an action to continue.', onInteract, onNearChange, onTravel }, ref) {
+const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPersonOutpost({ astronautId, suitColor, active, upgrades, start, enabled, pauseLabel = 'Choose an action to continue.', onInteract, onNearChange, onTravel, onMapVisit }, ref) {
   const root = useRef<HTMLDivElement>(null);
   const labels = useRef<(HTMLSpanElement | null)[]>([]);
   const pose = useRef<ExplorerPose>({ position: { ...start }, angle: Math.PI, facing: Math.PI, moving: false, distance: 0, reset: 0 });
@@ -224,6 +224,7 @@ const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPerso
   const failure = useCallback(() => setFailed(true), []);
   const fallback = failed || webgl === false;
   const guideBuilding = MOON_BUILDINGS.find((building) => building.id === guided);
+  const nearbyStation = MOON_BUILDINGS.find((building) => building.id === near);
   return <div className={`explorer-stage ${fallback ? 'explorer-fallback' : ''}`} ref={root} tabIndex={0} role="application" aria-label="3D Moon outpost exploration" aria-describedby="explorer-controls" data-astronaut-id={astronautId} data-suit-color={suitColor} data-player-x={SPAWN.x} data-player-z={SPAWN.z}
     onFocus={() => { input.current.active = true; }}
     onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) { input.current.active = false; stop(); } }}
@@ -264,7 +265,14 @@ const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPerso
       if (event.code === 'KeyE' && !event.repeat) { event.preventDefault(); interact(); }
       if (event.code === 'Escape') { event.preventDefault(); stop(); root.current?.blur(); }
     }}>
-    {fallback ? <div className="explorer-static-map"><img src="/images/moon-outpost.png" alt="Moon outpost map with habitat, shelter, and greenhouse." /><p>3D is unavailable on this device. Use the mission button to explore.</p></div>
+    {fallback ? <div className="explorer-static-map">
+      <img src="/images/moon-outpost.png" alt="Illustrated Moon outpost" />
+      {enabled && <nav className="explorer-map-stations" id="explorer-controls" aria-label="Map stations">
+        {MOON_BUILDINGS.filter(({ id }) => id === active || id === 'habitat' || (upgrades >= 3 && (id === 'solar' || id === 'greenhouse')))
+          .sort((a, b) => Number(b.id === active) - Number(a.id === active))
+          .map(({ id, name }) => <button key={id} data-active={active === id} onClick={() => onMapVisit(id)}>{name}</button>)}
+      </nav>}
+    </div>
     : webgl === null ? <div className="explorer-preparing" role="status">Preparing your 3D Moon base…</div>
     : <RendererBoundary onFailure={failure}><Canvas shadows camera={{ position: [SPAWN.x, 4.7, SPAWN.z + 8.2], fov: 54, near: .1, far: 220 }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: 'high-performance' }} onCreated={({ gl }) => gl.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); if (gl.domElement.isConnected && root.current?.contains(gl.domElement)) failure(); }, { once: true })}>
       <MoonEnvironment3D active={active} near={near} upgrades={upgrades} onWalkTo={(id) => { if (enabled && !dragged.current) walkTo(id); }} />
@@ -280,6 +288,7 @@ const ThirdPersonOutpost = forwardRef<ExplorerHandle, Props>(function ThirdPerso
         </span>)}
       </div>
       {!enabled && <div className="explorer-paused">{pauseLabel}</div>}
+      {nearbyStation && enabled && !guided && <button className="explorer-interact" onClick={interact}>Open {nearbyStation.name}</button>}
       {guideBuilding && enabled && <div className="explorer-guide" role="status">Walking to {guideBuilding.name.toLowerCase()}…</div>}
       <div className="explorer-dpad" aria-label="On-screen movement controls">{[
         { name: 'forward' as const, label: 'Walk forward', symbol: '↑' }, { name: 'left' as const, label: 'Walk left', symbol: '←' },
