@@ -164,3 +164,8 @@
 @media (max-width: 900px) {
   .outpost-radio-brief { top: calc(var(--launch-header-height) + 58px); }
 }
+
+.brief-base-readings { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 14px; margin: 7px 0 0; }
+.brief-base-readings > div { display: flex; align-items: baseline; gap: 5px; font-size: 12px; color: #dbd0f1; }
+.brief-base-readings dd { margin: 0; color: #f6f3ff; font-size: 14px; font-weight: 900; }
+.brief-base-readings > div[data-low="true"] dd { color: #ffb2a1; }

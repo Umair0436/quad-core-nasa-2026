@@ -1,26 +1,37 @@
 # LUNA-01 · Quad Core
 
-A space adventure prototype for kids ages 7–12, created for the [2026 Build a Junior Astronaut Mission Trainer challenge](https://www.spaceappschallenge.org/2026/challenges/junior-astronaut-mission-trainer/).
+LUNA-01 is a browser game where children ages 7–12 run a Moon outpost. Players explore in 3D, respond to emergencies, and see how their choices affect crew oxygen, battery power, food, and radiation exposure. Team Quad Core built it for the [2026 NASA Space Apps Junior Astronaut Mission Trainer challenge](https://www.spaceappschallenge.org/2026/challenges/junior-astronaut-mission-trainer/).
 
-## Current game
+[Play LUNA-01](https://frontend-alpha-ashen-33.vercel.app/)
 
-1. Choose one of four child astronauts, each with a different suit color.
-2. Follow Mission Control’s emergency call to its station.
-3. Complete the station’s task to unlock the next mission.
+## How to play
 
-   - Solar Array: clear the solar panels, then choose between 6 kW for oxygen or 2 kW while keeping the grow lights on. Compare the crew’s oxygen after each turn.
-   - Greenhouse: water the crop, balance grow lights with life support, and harvest food and move it into storage.
-   - Storm Shelter: decide what to power before the storm hits, protect the crew, and radio Earth for a reply.
+1. Pick Nova, Leo, Maya, or Kai and select **Start mission**.
+2. Read the short briefing at the top of the outpost. It tells you which station to find and what to do there.
+3. Walk to the highlighted station and choose **Open**, or click the building to walk there. The mission opens at the station.
+4. Complete the task and collect your badge. Select **Next mission** to continue.
 
-Walking uses suit oxygen, water, food, and power. Refill at Habitat or finish a mission to top up. Completing the three missions unlocks Horizon Base. Progress is saved per astronaut in the browser session.
+Use WASD, the arrow keys, or the touch controls to walk. Press **E** to interact with a nearby station. Drag or use **Q** and **R** to rotate the camera, and press **C** to recenter it. If WebGL is unavailable, select station names on the illustrated map.
 
-After the three missions, open **Base systems** for free practice. Walk to the Solar Array to clean panels, or to the Greenhouse to plant, irrigate, harvest and store crops.
+## Missions and rewards
 
-Use WASD, arrow keys, touch controls, or the mission buttons to walk. Press **E** near a location to interact. The camera starts behind the astronaut and keeps its angle as you walk. Drag or use **Q** and **R** to rotate it. Press **C** to center the view behind your astronaut. The illustrated outpost is available when WebGL is unavailable.
+- **Solar Array — Oxygen Hero.** Clean the panels and restore crew oxygen to 37%. Choose 6 kW for the oxygen generator, or choose 2 kW to keep the grow lights on while the crew uses more oxygen than it can replace. The oxygen bar updates after each turn.
+- **Greenhouse — Moon Gardener.** Water the seedling, turn on the grow lights, pick the crop, and put it in the food box. One button guides the player through each step.
+- **Storm Shelter — Storm Guardian.** Choose where to send power before a solar storm hits. Power the shelter to protect the crew, then radio Earth and wait for the reply.
 
-## Run the full game
+Each mission ends with a celebration. Earned badges appear in **Menu → My badges**. Finish all three missions to unlock Horizon Base and free practice through **Base systems**. Solar panel cleaning takes place at the Solar Array. Planting, watering, harvesting, and storing crops take place at the Greenhouse.
 
-Requires Ruby 3.4.x, Bundler, Python 3.10+, and Node.js 20.19+ or 22.12+ with npm.
+Walking uses suit supplies. Visit Habitat to refill. The suit reserves and the base readings track different resources.
+
+## How it works
+
+React, TypeScript, and Three.js power the interface and 3D outpost. Player actions are sent to `POST /api/base-simulation`. A Python adapter calls Azan Nadeem’s lunar model in `ml/functions.py` and sends the updated readings back to the game. Vercel hosts the game and the API.
+
+The browser stores progress and the choices made by each astronaut in session storage. Refreshing in the same tab restores that session. The game requires no account, database, or NASA API key.
+
+## Run locally
+
+Install Ruby 3.4.x, Bundler, Python 3.10+, and Node.js 20.19+ or 22.12+ with npm. From the repository root:
 
 ```bash
 cd backend
@@ -31,25 +42,9 @@ cd ..
 ./bin/dev
 ```
 
-Open http://localhost:5174. Vite proxies the Rails API on port 3100 and the Python simulator on port 3101. Ctrl+C stops all three services. No database or NASA API key is required.
+Open [http://localhost:5174](http://localhost:5174). Vite runs on port 5174, the Python simulator on 3101, and the Rails service for the earlier decision API on 3100. Press **Ctrl+C** to stop all three.
 
-To start the services separately, run each command in its own terminal:
-
-```bash
-cd backend
-bin/rails server -b 127.0.0.1 -p 3100
-```
-
-```bash
-python3 frontend/api/base-simulation.py
-```
-
-```bash
-cd frontend
-npm run dev
-```
-
-The research missions run in the browser. The Base systems panel calls the Python API. For Vercel projects rooted at `frontend`, enable **Include source files outside of the Root Directory in the Build Step** so the install command can stage the unchanged `ml/functions.py` model. Rails and the Vercel Ruby endpoints serve the earlier decision API. Start mission opens the outpost in the same app at the direct `/outpost/nova` page URL. Existing `/#briefing/nova` and `/#outpost/nova` links also work (also `leo`, `maya`, and `kai`).
+To deploy with Vercel, set the project root to `frontend` and enable **Include source files outside of the Root Directory in the Build Step**. The install command stages `ml/functions.py` for the Python function.
 
 ## Verify
 
@@ -60,33 +55,17 @@ npm run test:navigation
 npm run test:movement
 ```
 
-```bash
-cd backend
-bin/rails test
-```
-
-The Rails tests cover all eight decision paths, resource bounds, mission completion, invalid actions, signed tokens, and API rules metadata. Frontend production files are written to `frontend/dist/`.
+The production frontend is written to `frontend/dist/`. Run `bin/rails test` from `backend/` to check the earlier Ruby decision API.
 
 ## Source layout
 
-- `frontend/src/App.tsx`: astronaut selection and page navigation.
-- `frontend/src/navigation.ts`: direct-path and legacy hash route parsing.
-- `frontend/src/MissionBriefing.tsx`: personalized mission briefing.
-- `frontend/src/MoonOutpost.tsx`: research mission UI, pickup and lab submission.
-- `frontend/src/researchMission.ts`: supplies, research notes, and upgrades.
-- `frontend/src/components/ThirdPersonOutpost.tsx`: walking controls, camera follow, and interaction.
-- `frontend/src/components/Astronaut3D.tsx`: articulated astronaut models in the 3D outpost.
-- `frontend/src/components/MoonEnvironment3D.tsx`: buildings, lunar terrain, stars, and Earth.
-- `frontend/src/components/moonWorld.ts`: collisions and guided walking paths.
-- `frontend/src/launch.css`, `briefing.css`, `outpost.css`, and `fullscreen-game.css`: page and game overlay styles.
-- `frontend/public/images/`: generated character, background, and illustrated map assets.
-- `frontend/src/MissionGame.tsx`: retained earlier screen, not connected to the active flow.
-- `backend/`: Rails API and simplified simulation.
-- `docs/API.md`: API contract, simulation assumptions, and deployment notes.
-- `docs/ARTWORK.md`: artwork generation prompts.
+- [MoonOutpost.tsx](frontend/src/MoonOutpost.tsx) shows the active briefing, station panels, and badge celebrations.
+- [BaseSystems.tsx](frontend/src/BaseSystems.tsx) presents mission choices and simulator feedback.
+- [researchMission.ts](frontend/src/researchMission.ts) defines missions, badges, supplies, and saved progress.
+- [components](frontend/src/components) contains the 3D scene, astronaut, and movement.
+- [base-simulation.py](frontend/api/base-simulation.py) and [base_simulation.py](frontend/lib/base_simulation.py) connect the game to [the lunar model](ml/functions.py).
+- [Artwork notes](docs/ARTWORK.md) describe how the game artwork was made.
 
-## Science status
+## Science sources
 
-Supply meters use game points. The in-game science panel links to NASA background on Moon ice, growing plants in space, and solar storm shielding.
-
-The Storm Shelter drill uses the [28 October 2021 solar particle event observed by NASA’s Lunar Reconnaissance Orbiter](https://www.esa.int/articles/giant-solar-eruption-felt-on-earth-moon-and-mars) as its scenario. The event timing and radiation exposure points are training mechanics. The [direct Earth–Moon signal delay](https://ntrs.nasa.gov/api/citations/20240007214/downloads/NDE%20Needs%20to%20Enable%20Deep%20Space%20Exploration.pdf) sets the time to receive a radio reply.
+The Storm Shelter scenario draws on the [28 October 2021 solar particle event observed by NASA’s Lunar Reconnaissance Orbiter](https://www.esa.int/articles/giant-solar-eruption-felt-on-earth-moon-and-mars). The simulated radio reply takes about 2.6 seconds, based on [NASA’s Earth–Moon signal travel time](https://ntrs.nasa.gov/api/citations/20240007214/downloads/NDE%20Needs%20to%20Enable%20Deep%20Space%20Exploration.pdf). Oxygen, battery, crop growth, and radiation thresholds are simplified for learning. The radiation meter uses game points.

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, RefObject } from 'react';
-import BaseSystems, { clearTrainingRuns, trainingMissions } from './BaseSystems';
+import BaseSystems, { BaseReadings, clearTrainingRuns, trainingMissions } from './BaseSystems';
 import type { Astronaut } from './MissionBriefing';
 import type { ExplorerHandle } from './components/ThirdPersonOutpost';
 import { findMoonPath, MOON_BUILDINGS, nearbyBuilding } from './components/moonWorld';
@@ -211,10 +211,14 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
       </details>
     </header>
 
-    {!paused && destination && <section className="outpost-radio-brief" aria-label="Mission briefing" aria-live="polite">
-      <strong>{nearby === active ? `At ${destination.name}` : `Head to ${destination.name}`}</strong>
-      <p>{stationBriefs[active]}</p>
-      <small>{nearby === active ? 'Select the station to start.' : 'Look for the highlighted station.'}</small>
+    {!paused && destination && <section className="outpost-radio-brief" aria-label="Mission briefing">
+      <div role="status">
+        <strong>{nearby === active ? `At ${destination.name}` : `Head to ${destination.name}`}</strong>
+        <p>{stationBriefs[active]}</p>
+        <small>{nearby === active ? 'Select the station to start.' : 'Look for the highlighted station.'}</small>
+      </div>
+      <BaseReadings key={`${astronaut.id}:${mission.delivered}`} astronaut={astronaut.id} mission={trainingMission} />
+      {(mission.supplies.oxygen <= 25 || mission.supplies.power <= 25) && <small role="status">Low suit supplies. Refill at Habitat.</small>}
     </section>}
 
     <section className="moon-map-panel" aria-label="Explore the Moon outpost">

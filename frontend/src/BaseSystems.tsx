@@ -71,6 +71,42 @@ function loadRun(key: string): Save {
 
 const oneDecimal = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 
+async function readSimulation(save: Save, mission: TrainingMission | undefined, signal: AbortSignal): Promise<State> {
+  const response = await fetch('/api/base-simulation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...save, mission }),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
+  });
+  if (!response.ok) throw new Error('Base systems request failed');
+  return response.json();
+}
+
+export function BaseReadings({ astronaut, mission }: { astronaut: string; mission?: TrainingMission }) {
+  const [readings, setReadings] = useState<Pick<State, 'oxygen' | 'battery'>>();
+  const [unavailable, setUnavailable] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void readSimulation(loadRun(runKey(astronaut, mission)), mission, controller.signal).then((result) => {
+      if (!controller.signal.aborted) setReadings({ oxygen: result.oxygen, battery: result.battery });
+    }).catch(() => {
+      if (!controller.signal.aborted) setUnavailable(true);
+    });
+    return () => controller.abort();
+  }, [astronaut, mission]);
+
+  if (!readings) return <small>{unavailable ? 'Base readings unavailable.' : 'Checking base readings…'}</small>;
+  return <dl className="brief-base-readings" aria-label="Base readings">
+    <div data-low={readings.oxygen <= 25}>
+      <dt>Base oxygen</dt><dd>{oneDecimal.format(readings.oxygen)}%</dd>
+    </div>
+    <div data-low={readings.battery <= 25}>
+      <dt>Base battery</dt><dd>{Math.round(readings.battery)}%</dd>
+    </div>
+  </dl>;
+}
+
 export default function BaseSystems({ astronaut, headingRef, onClose, onStore, mission, onComplete, location }: {
   astronaut: string;
   headingRef: RefObject<HTMLHeadingElement | null>;
@@ -101,14 +137,7 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onStore, m
     setBusy(true);
     setError('');
     try {
-      const response = await fetch('/api/base-simulation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...next, mission }),
-        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]),
-      });
-      if (!response.ok) throw new Error('Base systems request failed');
-      const result: State = await response.json();
+      const result = await readSimulation(next, mission, controller.signal);
       if (controller.signal.aborted) return;
       if (mission && mission !== 'food' && action && state) {
         const changes = [
