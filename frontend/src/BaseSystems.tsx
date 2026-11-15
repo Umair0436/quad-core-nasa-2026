@@ -25,7 +25,7 @@ const training = {
 };
 type Crop = typeof crops[number];
 type Action = 'wait' | 'clean' | 'water' | 'refill' | 'plant' | 'harvest' | 'store';
-type Turn = { action: Action; oxygen: number; lighting: number; shielding: number; crop: Crop };
+type Turn = { action: Action; oxygen: number; lighting: number; shielding: number; crop: Crop; walkTicks?: number };
 type State = {
   goalMet: boolean;
   failure: string | null;
@@ -55,7 +55,7 @@ type State = {
   wateringDueIn: number;
   messages: string[];
 };
-type Save = { seed: number; turns: Turn[] };
+type Save = { seed: number; turns: Turn[]; walkStart?: number };
 
 function newRun(): Save {
   return { seed: crypto.getRandomValues(new Uint32Array(1))[0], turns: [] };
@@ -71,29 +71,51 @@ function loadRun(key: string): Save {
 
 const oneDecimal = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 
-async function readSimulation(save: Save, mission: TrainingMission | undefined, signal: AbortSignal): Promise<State> {
+async function readSimulation(save: Save, mission: TrainingMission | undefined, walkTicks: number, signal: AbortSignal): Promise<State> {
   const response = await fetch('/api/base-simulation', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...save, mission }),
+    body: JSON.stringify({ seed: save.seed, turns: save.turns, mission, walkTicks: Math.max(0, walkTicks - (save.walkStart ?? 0)) }),
     signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
   });
   if (!response.ok) throw new Error('Base systems request failed');
   return response.json();
 }
 
-export function BaseReadings({ astronaut, mission }: { astronaut: string; mission?: TrainingMission }) {
+export function BaseReadings({ astronaut, mission, walkTicks }: { astronaut: string; mission?: TrainingMission; walkTicks: number }) {
   const [readings, setReadings] = useState<Pick<State, 'oxygen' | 'battery'>>();
   const [unavailable, setUnavailable] = useState(false);
+  const latestWalkTicks = useRef(walkTicks);
+  latestWalkTicks.current = walkTicks;
 
   useEffect(() => {
     const controller = new AbortController();
-    void readSimulation(loadRun(runKey(astronaut, mission)), mission, controller.signal).then((result) => {
-      if (!controller.signal.aborted) setReadings({ oxygen: result.oxygen, battery: result.battery });
-    }).catch(() => {
-      if (!controller.signal.aborted) setUnavailable(true);
-    });
-    return () => controller.abort();
+    const save = loadRun(runKey(astronaut, mission));
+    let requested = -1;
+    let inFlight = false;
+    async function refresh() {
+      const ticks = latestWalkTicks.current;
+      if (inFlight || requested === ticks) return;
+      requested = ticks;
+      inFlight = true;
+      try {
+        const result = await readSimulation(save, mission, ticks, controller.signal);
+        if (!controller.signal.aborted) {
+          setReadings({ oxygen: result.oxygen, battery: result.battery });
+          setUnavailable(false);
+        }
+      } catch {
+        if (!controller.signal.aborted) setUnavailable(true);
+      } finally {
+        inFlight = false;
+      }
+    }
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 500);
+    return () => {
+      window.clearInterval(timer);
+      controller.abort();
+    };
   }, [astronaut, mission]);
 
   if (!readings) return <small>{unavailable ? 'Base readings unavailable.' : 'Checking base readings…'}</small>;
@@ -102,19 +124,19 @@ export function BaseReadings({ astronaut, mission }: { astronaut: string; missio
       <dt>Base oxygen</dt><dd>{oneDecimal.format(readings.oxygen)}%</dd>
     </div>
     <div data-low={readings.battery <= 25}>
-      <dt>Base battery</dt><dd>{Math.round(readings.battery)}%</dd>
+      <dt>Base battery</dt><dd>{oneDecimal.format(readings.battery)}%</dd>
     </div>
   </dl>;
 }
 
-export default function BaseSystems({ astronaut, headingRef, onClose, onStore, mission, onComplete, location }: {
+export default function BaseSystems({ astronaut, headingRef, onClose, mission, onComplete, location, walkTicks }: {
   astronaut: string;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onClose: () => void;
   mission?: TrainingMission;
   location: BuildingId | null;
   onComplete?: () => void;
-  onStore?: (count: number) => void;
+  walkTicks: number;
 }) {
   const storageKey = runKey(astronaut, mission);
   const [save, setSave] = useState(() => loadRun(storageKey));
@@ -130,14 +152,14 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onStore, m
   const [error, setError] = useState('');
   const pending = useRef<AbortController | null>(null);
 
-  async function update(next: Save, action?: Action, actionCrop = crop) {
+  async function update(next: Save, action?: Action) {
     const controller = new AbortController();
     if (pending.current) return;
     pending.current = controller;
     setBusy(true);
     setError('');
     try {
-      const result = await readSimulation(next, mission, controller.signal);
+      const result = await readSimulation(next, mission, walkTicks, controller.signal);
       if (controller.signal.aborted) return;
       if (mission && mission !== 'food' && action && state) {
         const changes = [
@@ -154,10 +176,6 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onStore, m
       setSave(next);
       try { sessionStorage.setItem(storageKey, JSON.stringify(next)); }
       catch { /* Keep this run in memory when storage is unavailable. */ }
-      if (!mission && action === 'store' && state) {
-        const collected = (result.stored[actionCrop] ?? 0) - (state.stored[actionCrop] ?? 0);
-        if (collected > 0) onStore?.(collected);
-      }
     } catch {
       if (!controller.signal.aborted) setError('Signal lost. Try again.');
     } finally {
@@ -184,7 +202,8 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onStore, m
     if (busy || finished || !state) return;
     if (action === 'clean' && !atSolarArray) return;
     if ((['plant', 'water', 'harvest', 'refill', 'store'].includes(action)) && !atGreenhouse) return;
-    void update({ ...save, turns: [...save.turns, { action, ...power, crop: actionCrop }] }, action, actionCrop);
+    const turn = { action, ...power, crop: actionCrop, walkTicks: Math.max(0, walkTicks - (save.walkStart ?? 0)) };
+    void update({ ...save, turns: [...save.turns, turn] }, action);
   }
 
   const finished = !!(state?.failure || state?.goalMet);
@@ -196,7 +215,7 @@ export default function BaseSystems({ astronaut, headingRef, onClose, onStore, m
     setOxygen(6);
     setLighting(4);
     setCrop('lettuce');
-    void update(newRun());
+    void update({ ...newRun(), walkStart: walkTicks });
   }
 
   function complete() {

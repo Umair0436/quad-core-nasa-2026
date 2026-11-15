@@ -21,7 +21,7 @@ Use WASD, the arrow keys, or the touch controls to walk. Press **E** to interact
 
 Each mission ends with a celebration. Earned badges appear in **Menu → My badges**. Finish all three missions to unlock Horizon Base and free practice through **Base systems**. Solar panel cleaning takes place at the Solar Array. Planting, watering, harvesting, and storing crops take place at the Greenhouse.
 
-Walking uses suit supplies. Visit Habitat to refill. The suit reserves and the base readings track different resources.
+The briefing shows base oxygen and battery readings from the simulator. They update while you walk and after each mission action.
 
 ## How it works
 

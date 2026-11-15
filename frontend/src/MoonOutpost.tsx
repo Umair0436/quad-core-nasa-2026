@@ -3,9 +3,9 @@ import type { CSSProperties, RefObject } from 'react';
 import BaseSystems, { BaseReadings, clearTrainingRuns, trainingMissions } from './BaseSystems';
 import type { Astronaut } from './MissionBriefing';
 import type { ExplorerHandle } from './components/ThirdPersonOutpost';
-import { findMoonPath, MOON_BUILDINGS, nearbyBuilding } from './components/moonWorld';
+import { findMoonPath, MOON_BUILDINGS, nearbyBuilding, WALK_SPEED } from './components/moonWorld';
 import type { BuildingId, Point } from './components/moonWorld';
-import { capacity, completeMission, deliveries, loadResearch, newMission, outOfSupplies, refill, saveResearch, travel } from './researchMission';
+import { completeMission, deliveries, loadResearch, newMission, saveResearch, travel } from './researchMission';
 import type { ResearchMission } from './researchMission';
 import './outpost.css';
 import './fullscreen-game.css';
@@ -47,11 +47,11 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   const delivery = deliveries[mission.delivered];
   const trainingMission = trainingMissions[mission.delivered];
   const latest = deliveries[mission.delivered - 1];
-  const depleted = outOfSupplies(mission);
+  const walkTicks = Math.min(10_000, Math.floor(mission.walkDistance / WALK_SPEED));
   const active = delivery?.site ?? 'horizon';
   const destination = MOON_BUILDINGS.find(({ id }) => id === active);
   const location = MOON_BUILDINGS.find(({ id }) => id === opened);
-  const paused = Boolean(opened || reward || showBadges || depleted || showScience || showBase || showTraining);
+  const paused = Boolean(opened || reward || showBadges || showScience || showBase || showTraining);
 
   useEffect(() => {
     const persist = () => saveResearch(astronaut.id, current.current);
@@ -69,8 +69,8 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   }, []);
 
   useEffect(() => {
-    if (opened || reward || showBadges || depleted || showScience || showBase || showTraining) panelHeading.current?.focus({ preventScroll: true });
-  }, [opened, reward, showBadges, depleted, showScience, showBase, showTraining]);
+    if (opened || reward || showBadges || showScience || showBase || showTraining) panelHeading.current?.focus({ preventScroll: true });
+  }, [opened, reward, showBadges, showScience, showBase, showTraining]);
 
   function commit(next: ResearchMission) {
     current.current = next;
@@ -81,14 +81,12 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
 
   function onTravel(distance: number, point: Point) {
     const before = current.current;
-    if (outOfSupplies(before)) return;
     current.current = travel(before, distance, point);
     unreportedDistance.current += distance;
-    if (unreportedDistance.current >= .4 || outOfSupplies(current.current)) commit(current.current);
+    if (unreportedDistance.current >= .4) commit(current.current);
   }
 
   function inspect(id: BuildingId) {
-    if (outOfSupplies(current.current)) return;
     onSound();
     if (nearbyBuilding(current.current.position) !== id) return;
     if (id === deliveries[current.current.delivered]?.site) {
@@ -101,12 +99,12 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   }
 
   function visitOnMap(id: BuildingId) {
-    if (paused || outOfSupplies(current.current)) return;
+    if (paused) return;
     if (nearby === id) {
       inspect(id);
       return;
     }
-    // The illustrated map uses the same route length and supply costs.
+    // Use the same walking distance on the illustrated map.
     const building = MOON_BUILDINGS.find((item) => item.id === id)!;
     const before = current.current;
     const path = findMoonPath(before.position, building.door);
@@ -144,12 +142,6 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     setReward(true);
   }
 
-  function addStoredFood(count: number) {
-    const before = current.current;
-    const food = Math.min(capacity('food', before.delivered), before.supplies.food + count * 10);
-    commit({ ...before, supplies: { ...before.supplies, food } });
-  }
-
   function openBaseSystems() {
     commit(current.current);
     if (menu.current) menu.current.open = false;
@@ -157,26 +149,11 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     setShowBase(true);
   }
 
-  function restock() {
-    if (nearby !== 'habitat') return;
-    onSound();
-    commit(refill(current.current));
-    resume();
-  }
-
   function startTrainingAgain() {
     if (delivery) return;
     if (menu.current) menu.current.open = false;
     clearTrainingRuns(astronaut.id);
     commit(newMission());
-    setNearby(null);
-    setSceneKey((key) => key + 1);
-    resume();
-  }
-
-  function returnToBase() {
-    onSound();
-    commit(newMission(current.current.delivered));
     setNearby(null);
     setSceneKey((key) => key + 1);
     resume();
@@ -217,8 +194,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
         <p>{stationBriefs[active]}</p>
         <small>{nearby === active ? 'Select the station to start.' : 'Look for the highlighted station.'}</small>
       </div>
-      <BaseReadings key={`${astronaut.id}:${mission.delivered}`} astronaut={astronaut.id} mission={trainingMission} />
-      {(mission.supplies.oxygen <= 25 || mission.supplies.power <= 25) && <small role="status">Low suit supplies. Refill at Habitat.</small>}
+      <BaseReadings key={`${astronaut.id}:${mission.delivered}`} astronaut={astronaut.id} mission={trainingMission} walkTicks={walkTicks} />
     </section>}
 
     <section className="moon-map-panel" aria-label="Explore the Moon outpost">
@@ -232,11 +208,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
     {fullscreenNotice && <button className="fullscreen-note" onClick={() => setFullscreenNotice(false)}>Fullscreen is unavailable here. Close</button>}
 
     {paused && <section className={`outpost-decision research-panel${reward ? ' badge-celebration-panel' : ''}`} aria-label={reward ? 'Mission reward' : 'Moon mission'}>
-      {depleted ? <div className="mission-result">
-        <h2 ref={panelHeading} tabIndex={-1}>Out of {depleted.label.toLowerCase()}</h2>
-        <p>Head back to base to refill. You can try this mission again.</p>
-        <button className="outpost-primary" onClick={returnToBase}>Back to base <span aria-hidden="true">→</span></button>
-      </div> : reward && latest ? <div className="mission-result badge-celebration">
+      {reward && latest ? <div className="mission-result badge-celebration">
         <div className="badge-confetti" aria-hidden="true">{Array.from({ length: 16 }, (_, index) => <span key={index} style={{
           '--confetti-color': confetti[index % confetti.length],
           '--confetti-x': `${((index * 37) % 97) + 1}%`,
@@ -260,20 +232,17 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
           </li>;
         })}</ul>
         <button className="outpost-primary" onClick={resume}>Back to exploring</button>
-      </div> : showTraining && trainingMission && delivery ? <BaseSystems astronaut={astronaut.id} mission={trainingMission} location={nearbyBuilding(mission.position)} headingRef={panelHeading}
+      </div> : showTraining && trainingMission && delivery ? <BaseSystems astronaut={astronaut.id} mission={trainingMission} walkTicks={walkTicks} location={nearbyBuilding(mission.position)} headingRef={panelHeading}
         onClose={resume} onComplete={finishTraining} />
-      : showBase ? <BaseSystems astronaut={astronaut.id} location={nearbyBuilding(mission.position)} headingRef={panelHeading} onClose={resume} onStore={addStoredFood} /> : showScience ? <div className="building-info">
+      : showBase ? <BaseSystems astronaut={astronaut.id} location={nearbyBuilding(mission.position)} headingRef={panelHeading} onClose={resume} walkTicks={walkTicks} /> : showScience ? <div className="building-info">
         <h2 ref={panelHeading} tabIndex={-1}>Moon science</h2>
         <p>The supplies use game points. Learn about <a href="https://www.nasa.gov/reference/moonbase-environment/" target="_blank" rel="noreferrer">Moon ice</a>, <a href="https://www.nasa.gov/exploration-research-and-technology/growing-plants-in-space/" target="_blank" rel="noreferrer">plants in space</a> and <a href="https://science.nasa.gov/science-research/heliophysics/how-nasa-will-protect-astronauts-from-space-radiation-at-the-moon/" target="_blank" rel="noreferrer">solar storm shelter</a> from NASA.</p>
         <button className="outpost-primary" onClick={resume}>Back to exploring</button>
       </div> : location && <div className="building-info">
         <h2 ref={panelHeading} tabIndex={-1}>{location.name}</h2>
-        {opened === 'habitat' ? <>
-          <p>Fill up your oxygen, water, food and power here.</p>
-          <button className="outpost-primary" onClick={restock}>Refill supplies</button>
-        </> : <p>{opened === 'horizon'
+        <p>{opened === 'habitat' ? 'This is where the crew lives.' : opened === 'horizon'
           ? delivery ? 'Complete all three missions to open this base.' : 'Welcome to your new Moon base!'
-          : delivery ? `The crew needs you at ${delivery.name}.` : 'All missions complete. Explore the outpost!'}</p>}
+          : delivery ? `The crew needs you at ${delivery.name}.` : 'All missions complete. Explore the outpost!'}</p>
         {!delivery && (opened === 'solar' || opened === 'greenhouse') && <button className="research-secondary" onClick={openBaseSystems}>Open base systems</button>}
         <button className="research-secondary" onClick={resume}>Back to exploring</button>
       </div>}

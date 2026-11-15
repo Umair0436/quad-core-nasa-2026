@@ -23,6 +23,8 @@ ACTIONS = ("wait", "clean", "water", "refill", "plant", "harvest", "store")
 MISSIONS = ("oxygen", "food", "storm")
 MAX_TURNS = 120
 HOURS_PER_TURN = 4
+HOURS_PER_WALK_TICK = .05
+MAX_WALK_TICKS = 10_000
 
 
 def validate_request(payload):
@@ -36,6 +38,10 @@ def validate_request(payload):
         raise ValueError("Invalid weather seed.")
     if not isinstance(turns, list) or len(turns) > MAX_TURNS:
         raise ValueError("Invalid number of turns.")
+    walk_ticks = payload.get("walkTicks", 0)
+    if type(walk_ticks) is not int or not 0 <= walk_ticks <= MAX_WALK_TICKS:
+        raise ValueError("Invalid walk duration.")
+    previous_walk_ticks = 0
     for turn in turns:
         if not isinstance(turn, dict) or turn.get("action") not in ACTIONS:
             raise ValueError("Unknown base action.")
@@ -46,11 +52,15 @@ def validate_request(payload):
             raise ValueError("Invalid shielding power.")
         if turn["action"] in ("plant", "harvest", "store") and turn.get("crop") not in CROPS:
             raise ValueError("Unknown crop.")
-    return seed, mission, turns
+        turn_walk_ticks = turn.get("walkTicks", previous_walk_ticks)
+        if type(turn_walk_ticks) is not int or not previous_walk_ticks <= turn_walk_ticks <= walk_ticks:
+            raise ValueError("Invalid turn walk duration.")
+        previous_walk_ticks = turn_walk_ticks
+    return seed, mission, turns, walk_ticks
 
 
 def simulate(payload):
-    seed, mission, turns = validate_request(payload)
+    seed, mission, turns, walk_ticks = validate_request(payload)
     # Load a private model instance so each replay has its own reproducible weather.
     spec = spec_from_file_location("lunar_model", MODEL_PATH)
     model = module_from_spec(spec)
@@ -80,6 +90,11 @@ def simulate(payload):
     storm_seen = False
     oxygen_use_per_day = 20
     oxygen_per_kw_per_day = 4
+
+    def use_oxygen(hours, oxygen_power):
+        nonlocal oxygen
+        generation = oxygen_power * oxygen_per_kw_per_day
+        oxygen = min(100, max(0, oxygen + (generation - oxygen_use_per_day) * hours / 24))
 
     def step(hours, allocations, player_actions):
         nonlocal inventory, growth, temperature, cleanliness, oxygen, exposure, simulated_hours
@@ -112,8 +127,7 @@ def simulate(payload):
                 state["clock"]["lunar_hour"], min(90, shield_power * 18),
                 base_radiation=8, peak_sun_radiation=0,
             ) * hours
-        generation = oxygen_power * oxygen_per_kw_per_day
-        oxygen = min(100, max(0, oxygen + (generation - oxygen_use_per_day) * hours / 24))
+        use_oxygen(hours, oxygen_power)
         return state
 
     # A zero-hour forecast displays the initial conditions without consuming supplies.
@@ -136,7 +150,26 @@ def simulate(payload):
             return simulated_hours >= 8 and state["power"]["allocations"]["Communication"]["allocated_kw"] >= 1
         return False
 
+    accounted_walk_ticks = 0
+
+    def advance_walk(until):
+        nonlocal accounted_walk_ticks
+        hours = (until - accounted_walk_ticks) * HOURS_PER_WALK_TICK
+        accounted_walk_ticks = until
+        if hours <= 0:
+            return
+        # Keep life support running while walking. Station turns control the drill clock.
+        standby = dict.fromkeys(REQUIREMENTS, 0)
+        standby.update({"Oxygen Generation": 6, "Life Support": 8})
+        state["power"] = model.update_energy_system(
+            power, state["environment"], hours, REQUIREMENTS, standby, print_results=False,
+        )
+        use_oxygen(hours, state["power"]["allocations"]["Oxygen Generation"]["allocated_kw"])
+
     for turn in turns:
+        if failed() or goal_met():
+            break
+        advance_walk(turn.get("walkTicks", accounted_walk_ticks))
         if failed() or goal_met():
             break
         action = turn["action"]
@@ -178,6 +211,10 @@ def simulate(payload):
                 break
         if plants_lost:
             actions["plants"] = "Unwatered crops died. Plant new seeds to try again."
+
+    # A completed station keeps its final result until the report is submitted.
+    if not failed() and not goal_met():
+        advance_walk(walk_ticks)
 
     systems = state["power"]["allocations"]
     return {
