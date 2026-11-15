@@ -12,20 +12,23 @@ export const deliveries = [
   {
     site: 'solar', name: 'Solar Array', title: 'Oxygen emergency', dispatch: 'The crew is running low on air. Reach the Solar Array and bring the oxygen generator back online.', start: 'Restore crew oxygen',
     finding: 'Solar panels turn sunlight into electricity, and batteries store some of it for later.',
+    badge: 'Oxygen Hero', badgeIcon: '⚡', cheer: 'You brought the crew’s air back!',
     upgrade: 'Extra solar panels', benefit: 'Your battery now uses less power on walks.',
   },
   {
     site: 'greenhouse', name: 'Greenhouse', title: 'Dinner before sunrise', dispatch: 'The crew needs food. Keep the lettuce alive through the night and harvest it.', start: 'Save the crop',
     finding: 'Plants need light, water and air to grow in a Moon greenhouse.',
+    badge: 'Moon Gardener', badgeIcon: '🌱', cheer: 'You grew dinner for the whole crew!',
     upgrade: 'Bigger greenhouse', benefit: 'You can now carry 125 food instead of 100.',
   },
   {
     site: 'shelter', name: 'Storm Shelter', title: 'Solar storm inbound', dispatch: 'Get to the shelter, protect the crew and radio Earth when the storm passes.', start: 'Prepare the shelter',
     finding: 'Thick walls can help protect astronauts during a solar storm.',
-    upgrade: 'New base unlocked', benefit: 'You can now visit Horizon Base.',
+    badge: 'Storm Guardian', badgeIcon: '🛡️', cheer: 'You kept everyone safe through the storm!',
+    upgrade: 'Horizon Base unlocked', benefit: 'You can now visit Horizon Base.',
   },
 ] as const satisfies ReadonlyArray<{
-  site: BuildingId; name: string; title: string; dispatch: string; start: string; finding: string; upgrade: string; benefit: string;
+  site: BuildingId; name: string; title: string; dispatch: string; start: string; finding: string; badge: string; badgeIcon: string; cheer: string; upgrade: string; benefit: string;
 }>;
 
 export type SupplyId = typeof supplies[number]['id'];

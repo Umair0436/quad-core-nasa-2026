@@ -15,6 +15,7 @@ export function preloadOutpostScene() {
 }
 
 const ThirdPersonOutpost = lazy(preloadOutpostScene);
+const confetti = ['#ffd08a', '#c2a0ff', '#8ae2d3', '#ff9b86'];
 
 export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   astronaut: Astronaut;
@@ -28,6 +29,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   const [nearby, setNearby] = useState<BuildingId | null>(() => nearbyBuilding(mission.position));
   const [opened, setOpened] = useState<BuildingId | null>(null);
   const [reward, setReward] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
   const [showBase, setShowBase] = useState(false);
   const [showTraining, setShowTraining] = useState(false);
   const [showScience, setShowScience] = useState(false);
@@ -43,7 +45,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   const active = delivery?.site ?? 'horizon';
   const destination = MOON_BUILDINGS.find(({ id }) => id === active)!;
   const location = MOON_BUILDINGS.find(({ id }) => id === opened);
-  const paused = Boolean(opened || reward || depleted || showScience || showBase || showTraining);
+  const paused = Boolean(opened || reward || showBadges || depleted || showScience || showBase || showTraining);
 
   useEffect(() => {
     const persist = () => saveResearch(astronaut.id, current.current);
@@ -61,8 +63,8 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   }, []);
 
   useEffect(() => {
-    if (opened || reward || depleted || showScience || showBase || showTraining) panelHeading.current?.focus({ preventScroll: true });
-  }, [opened, reward, depleted, showScience, showBase, showTraining]);
+    if (opened || reward || showBadges || depleted || showScience || showBase || showTraining) panelHeading.current?.focus({ preventScroll: true });
+  }, [opened, reward, showBadges, depleted, showScience, showBase, showTraining]);
 
   function commit(next: ResearchMission) {
     current.current = next;
@@ -120,6 +122,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
   function resume() {
     setOpened(null);
     setReward(false);
+    setShowBadges(false);
     setShowScience(false);
     setShowBase(false);
     setShowTraining(false);
@@ -195,6 +198,7 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
         <nav aria-label="Game menu">
           <a href={`#briefing/${astronaut.id}`}>Back to briefing</a>
           <button onClick={() => void toggleFullscreen()}>{fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</button>
+          {!paused && <button onClick={() => { if (menu.current) menu.current.open = false; setShowBadges(true); }}>My badges</button>}
           {!paused && !delivery && <>
             <button onClick={openBaseSystems}>Base systems</button>
             <button onClick={startTrainingAgain}>Start training again</button>
@@ -242,15 +246,35 @@ export default function MoonOutpost({ astronaut, headingRef, onSound }: {
 
     {fullscreenNotice && <button className="fullscreen-note" onClick={() => setFullscreenNotice(false)}>Fullscreen is unavailable here. Close</button>}
 
-    {paused && <section className="outpost-decision research-panel" aria-label="Moon mission">
+    {paused && <section className={`outpost-decision research-panel${reward ? ' badge-celebration-panel' : ''}`} aria-label={reward ? 'Mission reward' : 'Moon mission'}>
       {depleted ? <div className="mission-result">
         <h2 ref={panelHeading} tabIndex={-1}>Out of {depleted.label.toLowerCase()}</h2>
         <p>Head back to base to refill. You can try this mission again.</p>
         <button className="outpost-primary" onClick={returnToBase}>Back to base <span aria-hidden="true">→</span></button>
-      </div> : reward && latest ? <div className="mission-result">
-        <h2 ref={panelHeading} tabIndex={-1}>{latest.upgrade}!</h2>
-        <p>{latest.benefit} Your supplies are topped up.</p>
+      </div> : reward && latest ? <div className="mission-result badge-celebration">
+        <div className="badge-confetti" aria-hidden="true">{Array.from({ length: 16 }, (_, index) => <span key={index} style={{
+          '--confetti-color': confetti[index % confetti.length],
+          '--confetti-x': `${((index * 37) % 97) + 1}%`,
+          '--confetti-delay': `${(index % 5) * .07}s`,
+          '--confetti-drift': `${index % 2 ? 46 : -46}px`,
+        } as CSSProperties} />)}</div>
+        <h2 ref={panelHeading} tabIndex={-1}>{delivery ? `Great job, ${astronaut.name}!` : `Moon hero, ${astronaut.name}!`}</h2>
+        <p>{latest.cheer}</p>
+        <div className="mission-medal" aria-hidden="true">{latest.badgeIcon}</div>
+        <strong className="earned-badge">{latest.badge} badge earned!</strong>
+        <p className="badge-count">{mission.delivered} of {deliveries.length} badges</p>
+        <p className="reward-upgrade"><strong>{latest.upgrade}</strong><br />{latest.benefit}</p>
         <button className="outpost-primary" onClick={resume}>{delivery ? 'Next mission' : 'Explore Horizon Base'} <span aria-hidden="true">→</span></button>
+      </div> : showBadges ? <div className="building-info moon-badge-book">
+        <h2 ref={panelHeading} tabIndex={-1}>My badges</h2>
+        <ul className="moon-badge-list">{deliveries.map(({ badge, badgeIcon, name }, index) => {
+          const earned = index < mission.delivered;
+          return <li key={badge} data-earned={earned}>
+            <span aria-hidden="true">{earned ? badgeIcon : '☆'}</span>
+            <div><strong>{badge}</strong><small>{earned ? 'Earned' : `Finish the ${name} mission`}</small></div>
+          </li>;
+        })}</ul>
+        <button className="outpost-primary" onClick={resume}>Back to exploring</button>
       </div> : showTraining && trainingMission && delivery ? <BaseSystems astronaut={astronaut.id} mission={trainingMission} location={nearbyBuilding(mission.position)} headingRef={panelHeading}
         onClose={resume} onComplete={finishTraining} />
       : showBase ? <BaseSystems astronaut={astronaut.id} location={nearbyBuilding(mission.position)} headingRef={panelHeading} onClose={resume} onStore={addStoredFood} /> : showScience ? <div className="building-info">

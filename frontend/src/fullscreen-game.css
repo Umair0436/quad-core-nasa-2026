@@ -105,3 +105,40 @@
   .game-screen .research-objective h2 { font-size: 18px; }
   .game-screen .research-objective p { margin-block: 2px 5px; font-size: 13px; }
 }
+
+.game-screen .badge-celebration-panel {
+  top: 50%; left: 50%; right: auto; transform: translate(-50%, -50%);
+  width: min(420px, calc(100% - 24px)); max-height: calc(100% - 30px);
+  border-color: #ffd08a; background: #21183a; z-index: 16;
+}
+.game-screen .badge-celebration { position: relative; isolation: isolate; padding: 24px; text-align: center; }
+.game-screen .badge-celebration h2 { margin-bottom: 5px; color: #fff0c7; font-size: clamp(25px, 6vw, 36px); }
+.game-screen .badge-celebration .outpost-primary { justify-content: center; text-align: center; }
+.mission-medal {
+  display: grid; place-items: center; width: 88px; height: 88px; margin: 10px auto;
+  border-radius: 50%; border: 4px solid #ffe1a4; background: radial-gradient(circle, #f9c463, #a86127);
+  box-shadow: 0 0 27px #ffce7466, inset 0 0 0 3px #ae713e; font-size: 40px;
+}
+.earned-badge { color: #ffdf98; font-size: 20px; }
+.game-screen .badge-celebration .badge-count { margin: 4px 0 11px; color: #dabfff; }
+.game-screen .badge-celebration .reward-upgrade { padding: 8px; border-radius: 8px; background: #ffffff10; }
+.badge-confetti { position: absolute; overflow: hidden; inset: 0; z-index: -1; pointer-events: none; }
+.badge-confetti span { display: none; position: absolute; left: var(--confetti-x); top: 0; width: 6px; height: 11px; border-radius: 2px; background: var(--confetti-color); }
+@media (prefers-reduced-motion: no-preference) {
+  .badge-confetti span { display: block; opacity: 0; animation: badge-confetti 1.25s var(--confetti-delay) ease-out both; }
+  .mission-medal { animation: badge-pop .42s ease-out both; }
+  @keyframes badge-confetti {
+    0% { opacity: .9; transform: translateY(0) rotate(0); }
+    100% { opacity: 0; transform: translate(var(--confetti-drift), 280px) rotate(310deg); }
+  }
+  @keyframes badge-pop {
+    0% { transform: scale(.7) rotate(-12deg); }
+    65% { transform: scale(1.12) rotate(6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+}
+.moon-badge-list { list-style: none; display: grid; gap: 8px; margin: 12px 0 16px; padding: 0; }
+.moon-badge-list li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--game-border); border-radius: 8px; }
+.moon-badge-list li[data-earned="true"] { border-color: #e5ba64; color: #ffe1a4; background: #ffffff0b; }
+.moon-badge-list li > span { font-size: 24px; width: 30px; text-align: center; }
+.moon-badge-list small { display: block; margin-top: 2px; color: #d3c9e4; }
